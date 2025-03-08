@@ -5,7 +5,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 const ReminderList = () => {
   const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
-  const API_URL = "http://182.2.70.69:5000/api/reminders";
+  const API_URL = "http://192.168.43.66:5000/api/reminders";
 
   useEffect(() => {
     const fetchReminders = async () => {
@@ -45,13 +45,13 @@ const ReminderList = () => {
                 onClick={() => navigate(`/edit-reminder/${reminder.id}`)} 
                 className="bg-[#FBC02D] text-white px-4 py-2 rounded-lg flex items-center transition-all duration-300 hover:bg-[#F9A825] shadow-md"
               >
-                <FaEdit className="mr-2" /> Edit
+                <FaEdit className="mr-0" />
               </button>
               <button 
                 onClick={() => handleDelete(reminder.id)} 
                 className="bg-[#E53935] text-white px-4 py-2 rounded-lg flex items-center transition-all duration-300 hover:bg-[#D32F2F] shadow-md"
               >
-                <FaTrash className="mr-2" /> Delete
+                <FaTrash className="mr-0" />
               </button>
             </div>
           </div>

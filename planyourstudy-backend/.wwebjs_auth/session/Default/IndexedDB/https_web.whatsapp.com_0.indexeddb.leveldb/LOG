@@ -1,0 +1,13 @@
+2025/03/08-22:42:03.880 e34 Reusing MANIFEST C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\Plan Your Study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/03/08-22:42:03.880 e34 Recovering log #73
+2025/03/08-22:42:03.900 e34 Reusing old log C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\Plan Your Study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000073.log 
+2025/03/08-22:42:05.479 33a0 Level-0 table #78: started
+2025/03/08-22:42:05.484 33a0 Level-0 table #78: 158351 bytes OK
+2025/03/08-22:42:05.484 33a0 Delete type=0 #73
+2025/03/08-22:42:05.485 33a0 Manual compaction at level-0 from '\x00'\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00(\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/03/08-22:42:06.928 138c Compacting 1@1 + 1@2 files
+2025/03/08-22:42:06.960 138c Generated table #79@1: 28343 keys, 1011025 bytes
+2025/03/08-22:42:06.960 138c Compacted 1@1 + 1@2 files => 1011025 bytes
+2025/03/08-22:42:06.960 138c compacted to: files[ 0 0 1 0 0 0 0 ]
+2025/03/08-22:42:06.960 138c Delete type=2 #75
+2025/03/08-22:42:06.961 138c Delete type=2 #78

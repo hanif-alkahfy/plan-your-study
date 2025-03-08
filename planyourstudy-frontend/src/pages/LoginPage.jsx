@@ -7,7 +7,7 @@ const LoginPage = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const API_URL = "http://182.2.70.69:5000/api/auth/login";
+  const API_URL = "http://192.168.43.66:5000/api/auth/login";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
