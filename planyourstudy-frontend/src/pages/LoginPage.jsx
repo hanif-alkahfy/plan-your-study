@@ -7,7 +7,7 @@ const LoginPage = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const API_URL = "https://your-api:5000/api/auth/login";
+  const API_URL = "https://shapes-outputs-direct-zones.trycloudflare.com/api/auth/login";
 
   const handleSubmit = async (e) => {
     e.preventDefault();

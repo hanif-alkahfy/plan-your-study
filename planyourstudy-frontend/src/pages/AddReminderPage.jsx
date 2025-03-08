@@ -3,7 +3,7 @@ import ReminderForm from "../components/ReminderForm";
 
 const AddReminderPage = () => {
   const navigate = useNavigate();
-  const API_URL = "https://your-api:5000/api/reminders";
+  const API_URL = "https://shapes-outputs-direct-zones.trycloudflare.com/api/reminders";
 
   const handleAddReminder = async (newReminder) => {
     await fetch(API_URL, {

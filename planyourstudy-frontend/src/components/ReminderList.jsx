@@ -5,7 +5,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 const ReminderList = () => {
   const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
-  const API_URL = "https://your-api:5000/api/reminders";
+  const API_URL = "https://shapes-outputs-direct-zones.trycloudflare.com/api/reminders";
 
   useEffect(() => {
     const fetchReminders = async () => {

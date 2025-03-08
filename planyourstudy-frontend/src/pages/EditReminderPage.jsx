@@ -5,7 +5,7 @@ import ReminderForm from "../components/ReminderForm";
 const EditReminderPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const API_URL = `https://your-api:5000/api/reminders/${id}`;
+  const API_URL = `https://shapes-outputs-direct-zones.trycloudflare.com/api/reminders/${id}`;
   const [reminderData, setReminderData] = useState(null);
 
   useEffect(() => {
