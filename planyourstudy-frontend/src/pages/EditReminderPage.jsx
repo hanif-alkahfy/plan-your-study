@@ -5,7 +5,7 @@ import ReminderForm from "../components/ReminderForm";
 const EditReminderPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const API_URL = `http://192.168.43.66:5000/api/reminders/${id}`;
+  const API_URL = `http://47.252.73.113:5000/api/reminders/${id}`;
   const [reminderData, setReminderData] = useState(null);
 
   useEffect(() => {
