@@ -3,7 +3,7 @@ import ReminderForm from "../components/ReminderForm";
 
 const AddReminderPage = () => {
   const navigate = useNavigate();
-  const API_URL = "http://47.252.73.113:5000/api/reminders";
+  const API_URL = "http://182.2.70.69:5000/api/reminders";
 
   const handleAddReminder = async (newReminder) => {
     await fetch(API_URL, {

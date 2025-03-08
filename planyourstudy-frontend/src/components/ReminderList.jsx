@@ -5,7 +5,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 const ReminderList = () => {
   const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
-  const API_URL = "http://47.252.73.113:5000/api/reminders";
+  const API_URL = "http://182.2.70.69:5000/api/reminders";
 
   useEffect(() => {
     const fetchReminders = async () => {
