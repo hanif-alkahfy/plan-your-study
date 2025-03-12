@@ -32,6 +32,11 @@ client.on("ready", async () => {
 const sendGroupMessage = async (message) => {
   try {
     await client.sendMessage(GROUP_ID, message);
+    // Update status reminder ke "sent" setelah pesan terkirim
+    await sequelize.query(
+      "UPDATE reminders SET status = 'sent', sentAt = NOW() WHERE id = ?",
+      { replacements: [reminderId] }
+    );
     console.log(`Pesan berhasil dikirim`);
   } catch (error) {
     console.error("Gagal mengirim pesan ke grup:", error);
