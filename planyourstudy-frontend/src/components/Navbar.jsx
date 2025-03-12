@@ -19,7 +19,7 @@ const Navbar = ({ isOpen, toggleSidebar, onLogout }) => {
 
       <div className="relative">
         <button onClick={() => setDropdownOpen(!dropdownOpen)} className="focus:outline-none">
-          <img src="/src/assets/profile.png" alt="Profile" className="w-10 h-10 rounded-full" />
+          <img src="/public/profile.png" alt="Profile" className="w-10 h-10 rounded-full" />
         </button>
 
         {dropdownOpen && (
