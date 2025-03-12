@@ -16,7 +16,6 @@ const LoginPage = ({ onLogin }) => {
     try {
       const response = await axios.post(API_URL, { email, password });
   
-      console.log("Login response:", response.data); // Debugging
   
       if (response.status === 200 && response.data.token && response.data.user) {
         localStorage.setItem("token", response.data.token);

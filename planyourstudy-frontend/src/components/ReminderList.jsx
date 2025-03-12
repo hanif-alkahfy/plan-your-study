@@ -32,8 +32,8 @@ const ReminderList = () => {
         {reminders.map((reminder) => (
           <div 
           key={reminder.id} 
-          className={`bg-white/30 backdrop-blur-md border border-white/30 shadow-lg p-4 rounded-xl flex justify-between items-center 
-          ${reminder.status === "sent" ? "border-l-4 border-[#43A047]" : "border-l-4 border-[#29B6F6]"}`}
+          className={`bg-white/30 backdrop-blur-md shadow-lg p-4 rounded-xl flex justify-between items-center 
+          ${reminder.status === "sent" ? "border-l-5 border-red-300" : "border-l-5 border-green-300"}`}
         >        
             <div>
               <h3 className="text-lg font-semibold">{reminder.mataKuliah}</h3>
@@ -42,7 +42,7 @@ const ReminderList = () => {
             </div>
             <div className="flex space-x-2">
               <button 
-                onClick={() => navigate(`/edit-reminder/${reminder.id}`)} 
+                onClick={() => navigate(`/dashboard/edit-reminder/${reminder.id}`)} 
                 className="bg-[#FBC02D] text-white px-4 py-2 rounded-lg flex items-center transition-all duration-300 hover:bg-[#F9A825] shadow-md"
               >
                 <FaEdit className="mr-0" />

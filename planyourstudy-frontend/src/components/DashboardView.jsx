@@ -20,7 +20,7 @@ const DashboardView = () => {
 
   return (
     <div className="mt-5">
-      <h2 className="text-3xl font-bold text-[#01579B] mb-6">🎉 Halo, {user.username}</h2>
+      <h2 className="text-3xl font-bold text-[#01579B] mb-6">Halo, {user.username}</h2>
       <div className="space-y-4">
         <div className="bg-white/30 backdrop-blur-md border border-white/30 shadow-lg p-4 rounded-xl flex justify-between items-center">
           <p>ON DEVELOPMENT</p>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FaCalendarAlt, FaBell, FaChevronDown, FaHourglassHalf, FaBars, FaHome, FaList, FaPlus } from "react-icons/fa";
 
@@ -6,9 +6,30 @@ import { FaCalendarAlt, FaBell, FaChevronDown, FaHourglassHalf, FaBars, FaHome, 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [reminderDropdownOpen, setReminderDropdownOpen] = useState(false);
   const [jadwalDropdownOpen, setJadwalDropdownOpen] = useState(false);
+  const sidebarRef = useRef(null);
+
+  // Menutup sidebar jika klik di luar area sidebar
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        toggleSidebar(); // Tutup sidebar
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, toggleSidebar]);
 
   return (
-    <div
+    <div className={`fixed inset-0 z-50  ${isOpen ? "block" : "hidden"}`}>
+      {/* Overlay */}
+      <div className="absolute " onClick={toggleSidebar}></div>
+    <div ref={sidebarRef}
       className={`fixed top-0 left-0 h-full w-64 bg-blue-100/20 backdrop-blur-md border border-white/30 text-[#01579B] shadow-xl transform ${
         isOpen ? "translate-x-0" : "-translate-x-64"
       } transition-transform duration-300 rounded-r-2xl z-50`} // Tambahkan z-50
@@ -43,7 +64,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </li>
             <li className="px-6 py-2 flex items-center hover:bg-blue-200/40 rounded-lg">
               <FaPlus className="mr-2" />
-              <Link to="/add-reminder">Add Reminder</Link>
+              <Link to="/dashboard/add-reminder">Add Reminder</Link>
             </li>
           </ul>
         )}
@@ -65,7 +86,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </li>
           <li className="px-6 py-2 flex items-center hover:bg-blue-200/40 rounded-lg">
             <FaPlus className="mr-2" />
-            <Link to="/add-jadwal">Add Jadwal</Link>
+            <Link to="/dashboard/add-jadwal">Add Jadwal</Link>
           </li>
         </ul>
       )}
@@ -78,6 +99,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <span>Coming Soon</span>
       </li>
       </ul>
+    </div>
     </div>
   );
 };
