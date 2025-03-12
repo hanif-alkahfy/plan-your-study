@@ -24,8 +24,13 @@ const Profile = ({ userData, onUpdate, onBack }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onUpdate(formData);
+    onUpdate({
+      username: formData.username,
+      email: formData.email,
+      password: formData.password || undefined, // Jangan kirim password jika kosong
+    });
   };
+  
 
   return (
     <div className="max-w-lg mx-auto mt-10 p-8 bg-white/30 backdrop-blur-md border border-white/30 shadow-xl rounded-2xl">

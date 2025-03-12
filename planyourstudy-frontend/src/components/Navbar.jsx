@@ -14,12 +14,12 @@ const Navbar = ({ isOpen, toggleSidebar, onLogout }) => {
             <FaBars size={24} />
           </button>
         ) : null}
-        <span className={`text-lg font-bold text-[#01579B] transition-all duration-300 ${isOpen ? "ml-0" : "ml-10"}`}>Plan Your Study</span>
+        <span className={`text-lg font-bold text-[#01579B] transition-all duration-300 ${isOpen ? "ml-10" : "ml-10"}`}>Plan Your Study</span>
       </div>
 
       <div className="relative">
         <button onClick={() => setDropdownOpen(!dropdownOpen)} className="focus:outline-none">
-          <img src="/src/assets/react.svg" alt="Profile" className="w-10 h-10 rounded-full" />
+          <img src="/src/assets/profile.png" alt="Profile" className="w-10 h-10 rounded-full" />
         </button>
 
         {dropdownOpen && (

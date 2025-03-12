@@ -1,117 +1,139 @@
-const sequelize = require("../config/database");
+const { sequelize, createTrigger } = require("../config/database");
 const moment = require("moment-timezone");
 const { Client, LocalAuth } = require("whatsapp-web.js");
+const Jadwal = require("../models/Jadwal"); // Import model Jadwal
 
-const client = new Client({
-  authStrategy: new LocalAuth(),
-});
+// Inisialisasi bot WhatsApp
+const client = new Client({ authStrategy: new LocalAuth() });
 
-const GROUP_ID = "120363411146663952@g.us"; // Ganti dengan Group ID dari terminal
-let scheduledReminders = new Set(); // Menyimpan reminder yang sudah dijadwalkan
+const GROUP_ID = "120363336442316101@g.us";
+let scheduledReminders = new Map();
+
+// Jalankan pembuatan trigger saat bot dimulai
+(async () => {
+  await sequelize.sync();
+  await createTrigger();
+})();
 
 client.on("qr", (qr) => {
-  console.log("📢 Scan QR Code untuk login ke WhatsApp:");
+  console.log("Scan QR Code untuk login ke WhatsApp:");
   require("qrcode-terminal").generate(qr, { small: true });
 });
 
-client.on("ready", async() => {
-  console.log("✅ WhatsApp Bot siap!");
-  scheduleReminders(); // Jalankan pertama kali setelah bot siap
-
-  // await new Promise(resolve => setTimeout(resolve, 3000)); // Tunggu sebelum mengambil daftar chat
-  // const chats = await client.getChats();
-
-  // chats.forEach(chat => {
-  //   console.log(`📌 Nama: ${chat.name || "Tanpa Nama"} | ID: ${chat.id._serialized} | Group: ${chat.isGroup}`);
-  // });
-
-  // Jalankan ulang pengecekan reminder setiap 1 menit agar bisa menangkap reminder baru
-  setInterval(scheduleReminders, 60000);
+client.on("ready", async () => {
+  console.log("WhatsApp Bot siap!");
+  checkNewReminders();
+  checkJadwalKuliah(); // Cek jadwal kuliah pertama kali saat bot siap
+  setInterval(checkNewReminders, 60000); // Cek reminder setiap 60 detik
+  setInterval(checkJadwalKuliah, 60000); // Cek jadwal kuliah setiap 60 detik
 });
 
-// Fungsi untuk mengirim pesan ke grup WhatsApp
-const sendGroupMessage = async (message, reminderId) => {
-    try {
-      await client.sendMessage(GROUP_ID, message);
-  
-      // Update status reminder ke "sent" setelah pesan terkirim
-      await sequelize.query(
-        "UPDATE reminders SET status = 'sent', sentAt = NOW() WHERE id = ?",
-        { replacements: [reminderId] }
-      );
-  
-      console.log(`✅ Reminder berhasil terkirim dan Reminder ID ${reminderId} diperbarui ke 'sent'`);
-      
-      // Hapus dari daftar reminder yang dijadwalkan
-      scheduledReminders.delete(reminderId);
-    } catch (error) {
-      console.error("❌ Gagal mengirim pesan ke grup:", error);
-    }
-  };
-  
-
-// Fungsi untuk menjadwalkan reminder yang belum terkirim
-const scheduleReminders = async () => {
-  console.log("🔍 Menjadwalkan reminder yang belum terkirim...");
-
+// Fungsi untuk mengirim pesan ke grup
+const sendGroupMessage = async (message) => {
   try {
-    const [results] = await sequelize.query(
-      "SELECT * FROM reminders WHERE status = 'pending'"
-    );
-
-    if (!results || results.length === 0) {
-      console.log("⚠ Tidak ada reminder yang harus dijadwalkan.");
-      return;
-    }
-
-    console.log(`📌 Menemukan ${results.length} reminder yang harus dijadwalkan:`);
-
-    results.forEach((reminder) => {
-      if (scheduledReminders.has(reminder.id)) {
-        console.log(`⏳ Reminder ID ${reminder.id} sudah dijadwalkan sebelumnya, melewati...`);
-        return;
-      }
-
-      const reminderTime = moment(reminder.reminderTime).tz("Asia/Jakarta");
-      const now = moment().tz("Asia/Jakarta");
-      const delay = reminderTime.diff(now);
-
-      if (delay <= 0) {
-        console.log(`⚠ Reminder ID ${reminder.id} sudah terlewat, melewati...`);
-        return;
-      }
-
-      console.log(
-        `⏳ Reminder ID ${reminder.id} akan dikirim dalam ${Math.round(
-          delay / 1000 / 60
-        )} menit (${reminderTime.format("HH:mm:ss")})`
-      );
-
-      scheduledReminders.add(reminder.id);
-
-      // Jadwalkan pengiriman pesan tepat pada waktu `reminderTime`
-      setTimeout(() => {
-        const formattedMessage = formatReminderMessage(reminder);
-        sendGroupMessage(formattedMessage, reminder.id);
-      }, delay);
-    });
-  } catch (err) {
-    console.error("❌ ERROR: Gagal mengambil data dari database!", err);
+    await client.sendMessage(GROUP_ID, message);
+    console.log(`Pesan berhasil dikirim`);
+  } catch (error) {
+    console.error("Gagal mengirim pesan ke grup:", error);
   }
 };
 
-// Fungsi untuk memformat pesan berdasarkan template
+// 🔹 Fungsi untuk mengecek jadwal kuliah dan mengirim notifikasi
+const checkJadwalKuliah = async () => {
+  console.log("Mengecek jadwal kuliah...");
+
+  try {
+    const now = moment().tz("Asia/Jakarta");
+    const today = now.format("dddd"); // Contoh: "Monday"
+    const upcomingTime = now.add(10, "minutes").format("HH:mm");
+
+    // Ambil jadwal kuliah untuk hari ini yang akan dimulai dalam 10 menit
+    const jadwal = await Jadwal.findAll({
+      where: {
+        hari: today,
+        jamKuliah: upcomingTime,
+      },
+    });
+
+    if (jadwal.length === 0) {
+      console.log("Tidak ada jadwal kuliah dalam 10 menit ke depan.");
+      return;
+    }
+
+    console.log(`Ditemukan ${jadwal.length} jadwal kuliah yang akan dimulai.`);
+
+    // Kirim notifikasi untuk setiap jadwal yang ditemukan
+    jadwal.forEach((j) => {
+      const message = `🎓 *Jadwal Kuliah*  
+📚 : ${j.mataKuliah}  
+⏰ Jam: ${j.jamKuliah}  
+🏛 Ruang: ${j.ruang}`;
+      sendGroupMessage(message);
+    });
+  } catch (error) {
+    console.error("Gagal mengambil jadwal kuliah:", error);
+  }
+};
+
+// 🔹 Fungsi untuk mengecek reminder baru
+const checkNewReminders = async () => {
+  console.log("Mengecek reminder baru...");
+
+  try {
+    const events = await sequelize.query("SELECT reminder_id FROM reminder_events", {
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    if (events.length === 0) {
+      console.log("Tidak ada reminder baru.");
+      return;
+    }
+
+    console.log(`Ditemukan ${events.length} reminder baru.`);
+
+    for (const event of events) {
+      const reminder = await sequelize.models.Reminder.findByPk(event.reminder_id);
+      if (!reminder) continue;
+
+      scheduleReminder(reminder);
+    }
+
+    await sequelize.query("DELETE FROM reminder_events");
+  } catch (error) {
+    console.error("Gagal mengambil reminder baru:", error);
+  }
+};
+
+// 🔹 Fungsi untuk menjadwalkan reminder tertentu
+const scheduleReminder = (reminder) => {
+  if (scheduledReminders.has(reminder.id)) return;
+
+  const reminderTime = moment(reminder.reminderTime).tz("Asia/Jakarta");
+  const now = moment().tz("Asia/Jakarta");
+  const delay = reminderTime.diff(now);
+
+  if (delay <= 0) return;
+
+  console.log(`Reminder ID ${reminder.id} akan dikirim dalam ${Math.round(delay / 60000)} menit`);
+
+  const timeout = setTimeout(() => {
+    sendGroupMessage(formatReminderMessage(reminder));
+    scheduledReminders.delete(reminder.id);
+  }, delay);
+
+  scheduledReminders.set(reminder.id, timeout);
+};
+
+// 🔹 Fungsi untuk memformat pesan reminder
 const formatReminderMessage = (reminder) => {
-  const deadlineFormatted = moment(reminder.deadline)
-    .tz("Asia/Jakarta")
-    .format("ddd DD/MM/YYYY"); // Format Sun 09/03/2025
+  const deadlineFormatted = moment(reminder.deadline).tz("Asia/Jakarta").format("ddd DD/MM/YYYY");
 
   return `📢 *Reminder*  
-📚 Mata Kuliah: ${reminder.mataKuliah}  
-📝 Tugas: ${reminder.tugas}  
-📖 Deskripsi: ${reminder.deskripsi || "Tidak ada deskripsi"}  
-🔗 Link: ${reminder.attachmentLink || "Tidak ada link"}  
-📅 Deadline: ${deadlineFormatted}`;
+📚 : ${reminder.mataKuliah}  
+📝 : ${reminder.tugas}  
+📖 : ${reminder.deskripsi || "Tidak ada deskripsi"}  
+🔗 : ${reminder.attachmentLink || "Tidak ada link"}  
+📅 : ${deadlineFormatted}`;
 };
 
 client.initialize();

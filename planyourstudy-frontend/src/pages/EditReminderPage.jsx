@@ -1,11 +1,12 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ReminderForm from "../components/ReminderForm";
+import { showSuccessToast, showErrorToast } from "../components/CustomToast";
 
 const EditReminderPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const API_URL = `https://shapes-outputs-direct-zones.trycloudflare.com/api/reminders/${id}`;
+  const API_URL = `${import.meta.env.VITE_BASE_API_URL}/reminders/${id}`;
   const [reminderData, setReminderData] = useState(null);
 
   useEffect(() => {
@@ -23,10 +24,11 @@ const EditReminderPage = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedReminder),
     });
-    navigate("/dashboard");
+    showSuccessToast("Alert berhasil diperbaharui!")
+    navigate("/dashboard/reminders");
   };
 
-  return <ReminderForm reminderData={reminderData} onSubmit={handleUpdateReminder} onBack={() => navigate("/dashboard")} />;
+  return <ReminderForm reminderData={reminderData} onSubmit={handleUpdateReminder} onBack={() => navigate("/dashboard/reminders")} />;
 };
 
 export default EditReminderPage;

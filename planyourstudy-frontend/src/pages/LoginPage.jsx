@@ -7,35 +7,33 @@ const LoginPage = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const API_URL = "https://shapes-outputs-direct-zones.trycloudflare.com/api/auth/login";
+  const API_URL = `${import.meta.env.VITE_BASE_API_URL}/auth/login`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); // Reset error
+    setError("");
   
     try {
-      // Menggunakan axios untuk melakukan POST request
-      const response = await axios.post(API_URL, {
-        email,
-        password,
-      });
+      const response = await axios.post(API_URL, { email, password });
   
-      // Mendapatkan data dari response
-      const data = response.data;
+      console.log("Login response:", response.data); // Debugging
   
-      if (response.status === 200) {
-        localStorage.setItem("token", data.token);
+      if (response.status === 200 && response.data.token && response.data.user) {
+        localStorage.setItem("token", response.data.token);
         localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("user", JSON.stringify(response.data.user)); // Simpan user
+  
         onLogin();
         navigate("/dashboard");
       } else {
-        setError(data.message || "Login gagal, periksa kembali email dan password.");
+        setError("Login gagal: Data user tidak tersedia.");
       }
     } catch (err) {
       setError("Terjadi kesalahan, coba lagi nanti.");
       console.error("Login error:", err);
     }
-  };
+  };  
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">

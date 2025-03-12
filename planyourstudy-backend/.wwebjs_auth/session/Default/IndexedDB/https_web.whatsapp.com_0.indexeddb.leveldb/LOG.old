@@ -1,13 +1,13 @@
-2025/03/08-22:42:03.880 e34 Reusing MANIFEST C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\Plan Your Study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/03/08-22:42:03.880 e34 Recovering log #73
-2025/03/08-22:42:03.900 e34 Reusing old log C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\Plan Your Study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000073.log 
-2025/03/08-22:42:05.479 33a0 Level-0 table #78: started
-2025/03/08-22:42:05.484 33a0 Level-0 table #78: 158351 bytes OK
-2025/03/08-22:42:05.484 33a0 Delete type=0 #73
-2025/03/08-22:42:05.485 33a0 Manual compaction at level-0 from '\x00'\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00(\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/03/08-22:42:06.928 138c Compacting 1@1 + 1@2 files
-2025/03/08-22:42:06.960 138c Generated table #79@1: 28343 keys, 1011025 bytes
-2025/03/08-22:42:06.960 138c Compacted 1@1 + 1@2 files => 1011025 bytes
-2025/03/08-22:42:06.960 138c compacted to: files[ 0 0 1 0 0 0 0 ]
-2025/03/08-22:42:06.960 138c Delete type=2 #75
-2025/03/08-22:42:06.961 138c Delete type=2 #78
+2025/03/12-20:42:35.244 2f50 Reusing MANIFEST C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\NEW\plan-your-study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/03/12-20:42:35.244 2f50 Recovering log #78
+2025/03/12-20:42:35.271 2f50 Reusing old log C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\NEW\plan-your-study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000078.log 
+2025/03/12-20:42:36.851 2f50 Level-0 table #83: started
+2025/03/12-20:42:36.857 2f50 Level-0 table #83: 229529 bytes OK
+2025/03/12-20:42:36.858 2f50 Delete type=0 #78
+2025/03/12-20:42:36.858 2f50 Manual compaction at level-0 from '\x00*\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00+\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/03/12-20:42:38.372 21e0 Compacting 1@1 + 1@2 files
+2025/03/12-20:42:38.416 21e0 Generated table #84@1: 35224 keys, 1310757 bytes
+2025/03/12-20:42:38.416 21e0 Compacted 1@1 + 1@2 files => 1310757 bytes
+2025/03/12-20:42:38.416 21e0 compacted to: files[ 0 0 1 0 0 0 0 ]
+2025/03/12-20:42:38.416 21e0 Delete type=2 #80
+2025/03/12-20:42:38.416 21e0 Delete type=2 #83

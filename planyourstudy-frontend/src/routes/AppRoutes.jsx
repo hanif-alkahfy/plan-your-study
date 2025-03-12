@@ -1,10 +1,15 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { ToastContainer } from "react-toastify";
 import Dashboard from "../pages/Dashboard";
 import LoginPage from "../pages/LoginPage";
+import ProfilePage from "../pages/ProfilePage";
+import ReminderList from "../components/ReminderList";
 import AddReminderPage from "../pages/AddReminderPage";
 import EditReminderPage from "../pages/EditReminderPage";
-import ProfilePage from "../pages/ProfilePage";
+import JadwalList from "../components/JadwalList";
+import AddJadwalPage from "../pages/AddJadwalPage";
+import EditJadwalPage from "../pages/EditjadwalPage";
 
 const AppRoutes = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -42,13 +47,24 @@ const AppRoutes = () => {
   }
 
   return (
+    <>
+      <ToastContainer autoClose={2000} /> {/* Muncul selama 3 detik */}
     <Routes>
       <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={handleLogin} />} />
-      <Route path="/dashboard" element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/" replace />} />
+      <Route path="/dashboard/*" element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/" replace />} />
+      <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/" replace />} />
+
+      {/* Routing Reminders */}
+      <Route path="/reminders" element={isAuthenticated ? <ReminderList /> : <Navigate to="/" replace />} />
       <Route path="/add-reminder" element={isAuthenticated ? <AddReminderPage /> : <Navigate to="/" replace />} />
       <Route path="/edit-reminder/:id" element={isAuthenticated ? <EditReminderPage /> : <Navigate to="/" replace />} />
-      <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/" replace />} />
+
+      {/* Routing  Jadwal Kuliah*/}
+      <Route path="/jadwal" element={isAuthenticated ? <JadwalList /> : <Navigate to="/" replace />} />
+      <Route path="/add-jadwal" element={isAuthenticated ? <AddJadwalPage /> : <Navigate to="/" replace />} />
+      <Route path="/edit-jadwal/:id" element={isAuthenticated ? <EditJadwalPage /> : <Navigate to="/" replace />} />
     </Routes>
+    </>
   );
 };
 

@@ -5,7 +5,7 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 const ReminderList = () => {
   const navigate = useNavigate();
   const [reminders, setReminders] = useState([]);
-  const API_URL = "https://shapes-outputs-direct-zones.trycloudflare.com/api/reminders";
+  const API_URL = `${import.meta.env.VITE_BASE_API_URL}/reminders`;
 
   useEffect(() => {
     const fetchReminders = async () => {
@@ -27,7 +27,7 @@ const ReminderList = () => {
 
   return (
     <div className="mt-5">
-      <h2 className="text-3xl font-bold text-[#01579B] mb-6">📌 Reminder List</h2>
+      <h2 className="text-3xl font-bold text-[#01579B] mb-6">🔔 Reminder List</h2>
       <div className="space-y-4">
         {reminders.map((reminder) => (
           <div 

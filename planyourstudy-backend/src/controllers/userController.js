@@ -20,7 +20,6 @@ exports.registerUser = async (req, res) => {
     }
 };
 
-// LOGIN USER
 exports.loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -36,7 +35,16 @@ exports.loginUser = async (req, res) => {
 
         const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-        res.json({ message: 'Login successful', token });
+        // Kirim juga data user dalam respons
+        res.json({
+            message: 'Login successful',
+            token,
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email
+            }
+        });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
