@@ -6,7 +6,7 @@ import { showSuccessToast, showErrorToast } from "../components/CustomToast";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const API_URL = "http://192.168.0.101:5000/api/auth/edit"; // Base URL tanpa ID
+  const API_URL = `${import.meta.env.VITE_BASE_API_URL}/auth/edit`;
 
   const [user, setUser] = useState(null);
 
