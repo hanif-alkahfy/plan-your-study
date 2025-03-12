@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import Dashboard from "../pages/Dashboard";
+import DashboardView from "../components/DashboardView";
 import LoginPage from "../pages/LoginPage";
 import ProfilePage from "../pages/ProfilePage";
 import ReminderList from "../components/ReminderList";
@@ -48,22 +49,29 @@ const AppRoutes = () => {
 
   return (
     <>
-      <ToastContainer autoClose={2000} /> {/* Muncul selama 3 detik */}
-    <Routes>
-      <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={handleLogin} />} />
-      <Route path="/dashboard/*" element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/" replace />} />
-      <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/" replace />} />
+      <ToastContainer autoClose={2000} /> {/* Notifikasi toast */}
 
-      {/* Routing Reminders */}
-      <Route path="/reminders" element={isAuthenticated ? <ReminderList /> : <Navigate to="/" replace />} />
-      <Route path="/add-reminder" element={isAuthenticated ? <AddReminderPage /> : <Navigate to="/" replace />} />
-      <Route path="/edit-reminder/:id" element={isAuthenticated ? <EditReminderPage /> : <Navigate to="/" replace />} />
+      <Routes>
+        {/* Redirect "/" ke "/dashboard" jika sudah login */}
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={handleLogin} />} />
 
-      {/* Routing  Jadwal Kuliah*/}
-      <Route path="/jadwal" element={isAuthenticated ? <JadwalList /> : <Navigate to="/" replace />} />
-      <Route path="/add-jadwal" element={isAuthenticated ? <AddJadwalPage /> : <Navigate to="/" replace />} />
-      <Route path="/edit-jadwal/:id" element={isAuthenticated ? <EditJadwalPage /> : <Navigate to="/" replace />} />
-    </Routes>
+        {/* Dashboard sebagai parent untuk nested routes */}
+        <Route path="/dashboard/*" element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/" replace />}>
+          <Route index element={<DashboardView />} /> {/* Default saat masuk "/dashboard" */}
+          <Route path="reminders" element={<ReminderList />} />
+          <Route path="add-reminder" element={<AddReminderPage />} />
+          <Route path="edit-reminder/:id" element={<EditReminderPage />} />
+          <Route path="jadwal" element={<JadwalList />} />
+          <Route path="add-jadwal" element={<AddJadwalPage />} />
+          <Route path="edit-jadwal/:id" element={<EditJadwalPage />} />
+        </Route>
+
+        {/* Halaman Profile */}
+        <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/" replace />} />
+
+        {/* Catch-all route untuk 404 Not Found */}
+        <Route path="*" element={<h1 className="text-center text-red-500 text-3xl">404 - Page Not Found</h1>} />
+      </Routes>
     </>
   );
 };
