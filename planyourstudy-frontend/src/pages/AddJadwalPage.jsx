@@ -12,7 +12,7 @@ const AddJadwalPage = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newJadwal),
     });
-    showSuccessToast("Jadwal berhasil ditambahkan!")
+    //showSuccessToast("Jadwal berhasil ditambahkan!")
     navigate("/dashboard/jadwal"); // Redirect ke List Jadwal setelah submit
   };
 

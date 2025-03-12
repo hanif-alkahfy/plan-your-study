@@ -24,7 +24,7 @@ const EditReminderPage = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedReminder),
     });
-    showSuccessToast("Alert berhasil diperbaharui!")
+    //showSuccessToast("Alert berhasil diperbaharui!")
     navigate("/dashboard/reminders");
   };
 

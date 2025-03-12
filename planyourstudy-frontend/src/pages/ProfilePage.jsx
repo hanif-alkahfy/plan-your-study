@@ -35,12 +35,12 @@ const ProfilePage = () => {
         const newUserData = { ...user, ...updatedData };
         localStorage.setItem("user", JSON.stringify(newUserData));
 
-        showSuccessToast("Profile updated successfully!");
+        //showSuccessToast("Profile updated successfully!");
         navigate("/dashboard");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      showErrorToast("Error update profile")
+      //showErrorToast("Error update profile")
     }
   };
 

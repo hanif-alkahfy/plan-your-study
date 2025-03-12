@@ -12,7 +12,7 @@ const AddReminderPage = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newReminder),
     });
-    showSuccessToast("Alert berhasil ditambahkan!")
+    //showSuccessToast("Alert berhasil ditambahkan!")
     navigate("/dashboard/reminders");
   };
 

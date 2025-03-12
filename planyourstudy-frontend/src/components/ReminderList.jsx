@@ -28,7 +28,7 @@ const ReminderList = () => {
   return (
     <div className="mt-5">
       <h2 className="text-3xl font-bold text-[#01579B] mb-6">🔔 Reminder List</h2>
-      <div className="space-y-4">
+      <div className="grid lg:grid-cols-3 gap-4">
         {reminders.map((reminder) => (
           <div 
           key={reminder.id} 

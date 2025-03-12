@@ -24,7 +24,7 @@ const EditJadwalPage = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updatedJadwal),
     });
-    showSuccessToast("Jadwal berhasil diperbaharui!")
+    //showSuccessToast("Jadwal berhasil diperbaharui!")
     navigate("/dashboard/jadwal");
   }
 
