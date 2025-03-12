@@ -22,7 +22,7 @@ const Dashboard = ({ onLogout }) => {
       <Navbar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} onLogout={onLogout}/>
       {/* Nested Routes dalam Dashboard */}
       <Routes>
-          <Route path="/" element={<DashboardView />} />
+          <Route path="/dashboard" element={<DashboardView />} />
           <Route path="reminders" element={<ReminderList />} />
           <Route path="jadwal" element={<JadwalList />} />
         </Routes>
