@@ -1,13 +1,21 @@
-2025/03/12-20:45:01.787 2ec0 Reusing MANIFEST C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\NEW\plan-your-study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/03/12-20:45:01.788 2ec0 Recovering log #82
-2025/03/12-20:45:01.800 2ec0 Reusing old log C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\NEW\plan-your-study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000082.log 
-2025/03/12-20:45:03.380 340c Level-0 table #87: started
-2025/03/12-20:45:03.384 340c Level-0 table #87: 122048 bytes OK
-2025/03/12-20:45:03.386 340c Delete type=0 #82
-2025/03/12-20:45:03.386 340c Manual compaction at level-0 from '\x00+\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00,\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/03/12-20:45:05.122 340c Compacting 1@1 + 1@2 files
-2025/03/12-20:45:05.173 340c Generated table #88@1: 35732 keys, 1319538 bytes
-2025/03/12-20:45:05.173 340c Compacted 1@1 + 1@2 files => 1319538 bytes
-2025/03/12-20:45:05.173 340c compacted to: files[ 0 0 1 0 0 0 0 ]
-2025/03/12-20:45:05.173 340c Delete type=2 #84
-2025/03/12-20:45:05.173 340c Delete type=2 #87
+2025/03/15-18:10:14.289 3c08 Reusing MANIFEST C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\Plan Your Study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/03/15-18:10:14.289 3c08 Recovering log #235
+2025/03/15-18:10:14.311 3c08 Reusing old log C:\Users\hanif\Visual Studio Code\2025 TOP SECRET\Plan Your Study\planyourstudy-backend\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000235.log 
+2025/03/15-18:10:14.311 3c08 Delete type=2 #233
+2025/03/15-18:10:18.634 4d0c Level-0 table #240: started
+2025/03/15-18:10:18.640 4d0c Level-0 table #240: 222493 bytes OK
+2025/03/15-18:10:18.641 4d0c Delete type=0 #235
+2025/03/15-18:10:18.641 4d0c Manual compaction at level-0 from '\x00O\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00P\x00\x00\x00' @ 0 : 0; will stop at '\x00O\x00\x00\x05' @ 278650 : 1
+2025/03/15-18:10:18.641 4d0c Compacting 1@0 + 1@1 files
+2025/03/15-18:10:18.748 4d0c Generated table #241@0: 94568 keys, 2055042 bytes
+2025/03/15-18:10:18.748 4d0c Compacted 1@0 + 1@1 files => 2055042 bytes
+2025/03/15-18:10:18.748 4d0c compacted to: files[ 0 1 1 0 0 0 0 ]
+2025/03/15-18:10:18.749 4d0c Delete type=2 #240
+2025/03/15-18:10:18.749 4d0c Manual compaction at level-0 from '\x00O\x00\x00\x05' @ 278650 : 1 .. '\x00P\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/03/15-19:50:24.202 3424 Compacting 1@1 + 1@2 files
+2025/03/15-19:50:24.254 3424 Generated table #242@1: 47853 keys, 1672132 bytes
+2025/03/15-19:50:24.254 3424 Compacted 1@1 + 1@2 files => 1672132 bytes
+2025/03/15-19:50:24.255 3424 compacted to: files[ 0 0 1 0 0 0 0 ]
+2025/03/15-19:50:24.255 3424 Delete type=2 #57
+2025/03/15-19:50:24.255 3424 Delete type=2 #237
+2025/03/15-19:50:24.255 3424 Delete type=2 #241

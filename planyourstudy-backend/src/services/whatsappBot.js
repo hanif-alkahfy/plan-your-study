@@ -2,11 +2,14 @@ const { sequelize, createTrigger } = require("../config/database");
 const moment = require("moment-timezone");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const Jadwal = require("../models/Jadwal"); // Import model Jadwal
+const { logWithTimestamp, startServerUpTimeDisplay } = require("../../src/components/logWithTimestamp");
+
+startServerUpTimeDisplay();
 
 // Inisialisasi bot WhatsApp
 const client = new Client({ authStrategy: new LocalAuth() });
 
-const GROUP_ID = "120363336442316101@g.us";
+const GROUP_ID = "120363411146663952@g.us";
 let scheduledReminders = new Map();
 
 // Jalankan pembuatan trigger saat bot dimulai
@@ -16,12 +19,12 @@ let scheduledReminders = new Map();
 })();
 
 client.on("qr", (qr) => {
-  console.log("Scan QR Code untuk login ke WhatsApp:");
+  logWithTimestamp("Scan QR Code untuk login ke WhatsApp:");
   require("qrcode-terminal").generate(qr, { small: true });
 });
 
 client.on("ready", async () => {
-  console.log("WhatsApp Bot siap!");
+  logWithTimestamp("WhatsApp Bot siap!");
   checkNewReminders();
   checkJadwalKuliah(); // Cek jadwal kuliah pertama kali saat bot siap
   setInterval(checkNewReminders, 60000); // Cek reminder setiap 60 detik
@@ -29,15 +32,22 @@ client.on("ready", async () => {
 });
 
 // Fungsi untuk mengirim pesan ke grup
-const sendGroupMessage = async (message) => {
+const sendGroupMessage = async (message, id) => {
   try {
     await client.sendMessage(GROUP_ID, message);
     // Update status reminder ke "sent" setelah pesan terkirim
     await sequelize.query(
       "UPDATE reminders SET status = 'sent', sentAt = NOW() WHERE id = ?",
-      { replacements: [reminderId] }
+      { replacements: [id] }
     );
-    console.log(`Pesan berhasil dikirim`);
+    logWithTimestamp(`Pesan berhasil dikirim`);
+
+    // Reset tampilan ke uptime setelah 3 detik
+    setTimeout(() => {
+      console.clear();
+      startServerUpTimeDisplay();
+    }, 3000);
+
   } catch (error) {
     console.error("Gagal mengirim pesan ke grup:", error);
   }
@@ -45,7 +55,7 @@ const sendGroupMessage = async (message) => {
 
 // 🔹 Fungsi untuk mengecek jadwal kuliah dan mengirim notifikasi
 const checkJadwalKuliah = async () => {
-  console.log("Mengecek jadwal kuliah...");
+  //logWithTimestamp("Mengecek jadwal kuliah...");
 
   try {
     const now = moment().tz("Asia/Jakarta");
@@ -61,11 +71,11 @@ const checkJadwalKuliah = async () => {
     });
 
     if (jadwal.length === 0) {
-      console.log("Tidak ada jadwal kuliah dalam 10 menit ke depan.");
+      //logWithTimestamp("Tidak ada jadwal kuliah dalam 10 menit ke depan.");
       return;
     }
 
-    console.log(`Ditemukan ${jadwal.length} jadwal kuliah yang akan dimulai.`);
+    logWithTimestamp(`Ditemukan ${jadwal.length} jadwal kuliah yang akan dimulai.`);
 
     // Kirim notifikasi untuk setiap jadwal yang ditemukan
     jadwal.forEach((j) => {
@@ -82,7 +92,7 @@ const checkJadwalKuliah = async () => {
 
 // 🔹 Fungsi untuk mengecek reminder baru
 const checkNewReminders = async () => {
-  console.log("Mengecek reminder baru...");
+  logWithTimestamp("Mengecek reminder baru...", true);
 
   try {
     const events = await sequelize.query("SELECT reminder_id FROM reminder_events", {
@@ -90,11 +100,11 @@ const checkNewReminders = async () => {
     });
 
     if (events.length === 0) {
-      console.log("Tidak ada reminder baru.");
+      //logWithTimestamp("Tidak ada reminder baru.");
       return;
     }
 
-    console.log(`Ditemukan ${events.length} reminder baru.`);
+    logWithTimestamp(`Ditemukan ${events.length} reminder baru.`);
 
     for (const event of events) {
       const reminder = await sequelize.models.Reminder.findByPk(event.reminder_id);
@@ -102,6 +112,12 @@ const checkNewReminders = async () => {
 
       scheduleReminder(reminder);
     }
+
+    // Kembalikan ke tampilan uptime setelah 5 detik
+    setTimeout(() => {
+      console.clear();
+      startServerUpTimeDisplay();
+    }, 5000);
 
     await sequelize.query("DELETE FROM reminder_events");
   } catch (error) {
@@ -119,10 +135,10 @@ const scheduleReminder = (reminder) => {
 
   if (delay <= 0) return;
 
-  console.log(`Reminder ID ${reminder.id} akan dikirim dalam ${Math.round(delay / 60000)} menit`);
+  logWithTimestamp(`Reminder ID ${reminder.id} akan dikirim dalam ${Math.round(delay / 60000)} menit`);
 
   const timeout = setTimeout(() => {
-    sendGroupMessage(formatReminderMessage(reminder));
+    sendGroupMessage(formatReminderMessage(reminder), reminder.id);
     scheduledReminders.delete(reminder.id);
   }, delay);
 

@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const {sequelize} = require('../config/database');
+const User = require('./User');
 
 const Jadwal = sequelize.define('Jadwal', {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -10,5 +11,8 @@ const Jadwal = sequelize.define('Jadwal', {
 }, {
     timestamps: true
 });
+
+User.hasMany(Jadwal);
+Jadwal.belongsTo(User);
 
 module.exports = Jadwal;

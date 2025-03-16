@@ -40,7 +40,7 @@ const Profile = ({ userData, onUpdate, onBack }) => {
         className="mb-6 flex items-center text-[#01579B] hover:text-[#29B6F6] transition-all duration-300 p-3 rounded-lg self-start"
       >
         <FaArrowLeft className="mr-2 text-lg" /> 
-        <span className="text-lg font-semibold">Kembali ke Dashboard</span>
+        <span className="text-lg font-semibold"></span>
       </button>
 
       <h2 className="text-2xl font-bold text-[#01579B] mb-6 text-center">Edit Profile</h2>

@@ -5,6 +5,7 @@ const authRoutes = require('./src/routes/authRoutes');
 const reminderRoutes = require('./src/routes/reminderRoutes');
 const jadwalRoutes = require('./src/routes/jadwalRoutes');
 const whatsappRoutes = require("./src/routes/whatsappRoutes");
+const { logWithTimestamp, startServerUpTimeDisplay } = require("./src/components/logWithTimestamp");
 
 
 const PORT = process.env.PORT || 5000;
@@ -25,6 +26,5 @@ app.use('/api/jadwal', jadwalRoutes);
 sequelize.sync({ force: false, alter: true })
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log('Server berjalan di PORT: 5000');
+  logWithTimestamp('Server berjalan di PORT: 5000', true);
 });
-

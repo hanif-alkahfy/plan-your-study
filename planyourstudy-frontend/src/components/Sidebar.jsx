@@ -30,7 +30,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       {/* Overlay */}
       <div className="absolute " onClick={toggleSidebar}></div>
     <div ref={sidebarRef}
-      className={`fixed top-0 left-0 h-full w-64 bg-blue-100/20 backdrop-blur-md border border-white/30 text-[#01579B] shadow-xl transform ${
+      className={`fixed top-0 left-0 h-full w-64 bg-blue-100/75 backdrop-blur-md border border-white/30 text-[#01579B] shadow-xl transform ${
         isOpen ? "translate-x-0" : "-translate-x-64"
       } transition-transform duration-300 rounded-r-2xl z-50`} // Tambahkan z-50
     >

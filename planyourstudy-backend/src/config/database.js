@@ -1,4 +1,5 @@
 const { Sequelize } = require('sequelize');
+const { logWithTimestamp} = require("../../src/components/logWithTimestamp");
 require('dotenv').config();
 
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
@@ -41,7 +42,7 @@ const createTrigger = async () => {
 const testConnection = async () => {
     try {
         await sequelize.authenticate();
-        console.log("Database Connected!");
+        logWithTimestamp("Database Connected!");
     } catch (error) {
         console.error("ERROR: Gagal terhubung ke database!", error);
     }
