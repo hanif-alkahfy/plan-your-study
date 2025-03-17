@@ -32,7 +32,7 @@ const ReminderList = () => {
         {reminders.map((reminder) => (
           <div 
           key={reminder.id} 
-          className={`bg-white/30 backdrop-blur-md shadow-lg p-4 rounded-xl flex justify-between items-center 
+          className={`bg-white/50 backdrop-blur-md shadow-lg p-4 rounded-xl flex justify-between items-center 
           ${reminder.status === "sent" ? "border-l-5 border-red-300" : "border-l-5 border-green-300"}`}
         >        
             <div>

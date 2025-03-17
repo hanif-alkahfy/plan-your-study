@@ -32,10 +32,11 @@ const JadwalList = () => {
         {jadwal.map((item) => (
           <div 
             key={item.id} 
-            className="bg-white/30 backdrop-blur-md border border-white/30 shadow-lg p-4 rounded-xl flex justify-between items-center border-l-4 border-[#29B6F6]"
+            className="bg-white/50 backdrop-blur-md border border-white/30 shadow-lg p-4 rounded-xl flex justify-between items-center border-l-4 border-[#29B6F6]"
           >        
             <div>
               <h3 className="text-lg font-semibold">{item.mataKuliah}</h3>
+              <p>📅 {item.hari}</p>
               <p>🕒 {item.jamKuliah}</p>
               <p>🏫 {item.ruang}</p>
             </div>
