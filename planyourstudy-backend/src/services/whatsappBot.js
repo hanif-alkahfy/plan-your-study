@@ -1,8 +1,7 @@
-const { sequelize, createTrigger } = require("../config/database");
-const moment = require("moment-timezone");
-const { Client, LocalAuth } = require("whatsapp-web.js");
-const Jadwal = require("../models/Jadwal"); // Import model Jadwal
-const { logWithTimestamp, startServerUpTimeDisplay } = require("../../src/components/logWithTimestamp");
+const schedule = require("node-schedule");
+const { Reminder } = require("../models/Reminder");
+const { JadwalKuliah } = require("../models/JadwalKuliah");
+const { logWithTimestamp } = require("../components/logWithTimestamp");
 
 startServerUpTimeDisplay();
 
@@ -12,15 +11,13 @@ const client = new Client({ authStrategy: new LocalAuth() });
 const GROUP_ID = "120363411146663952@g.us";
 let scheduledReminders = new Map();
 
-// Jalankan pembuatan trigger saat bot dimulai
-(async () => {
-  await sequelize.sync();
-  await createTrigger();
-})();
 
 client.on("qr", (qr) => {
-  logWithTimestamp("Scan QR Code untuk login ke WhatsApp:");
+  logWithTimestamp("QR Code keluar!");
   require("qrcode-terminal").generate(qr, { small: true });
+
+  const io = getIO();
+  io.emit("qr", qr); // Kirim QR ke semua client
 });
 
 client.on("ready", async () => {

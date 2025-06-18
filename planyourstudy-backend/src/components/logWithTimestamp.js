@@ -25,10 +25,8 @@ const logWithTimestamp = (message, reset = false) => {
 // Fungsi untuk update Server Up Time setiap 1 detik
 const startServerUpTimeDisplay = () => {
   setInterval(() => {
-    console.clear();
     const currentTimestamp = moment().tz("Asia/Jakarta").format("DD/MM/YY HH:mm");
     console.log(`[${currentTimestamp}] : Server Up Time: ${getServerUpTime()}`);
-    console.log(""); // Tambah baris kosong
   }, 1000);
 };
 

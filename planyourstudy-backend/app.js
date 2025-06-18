@@ -1,30 +1,31 @@
 const express = require('express');
 const cors = require('cors');
-const {sequelize} = require('./src/config/database');
+const { sequelize } = require('./src/config/database');
 const authRoutes = require('./src/routes/authRoutes');
 const reminderRoutes = require('./src/routes/reminderRoutes');
 const jadwalRoutes = require('./src/routes/jadwalRoutes');
 const whatsappRoutes = require("./src/routes/whatsappRoutes");
-const { logWithTimestamp, startServerUpTimeDisplay } = require("./src/components/logWithTimestamp");
-
-
-const PORT = process.env.PORT || 5000;
-const app = express();
+const { createReminderTrigger } = require('./src/controllers/TriggerController');
 
 require("dotenv").config();
-require("./src/services/whatsappBot");
 
+const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Gunakan routing
 app.use("/api/whatsapp", whatsappRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/jadwal', jadwalRoutes);
 
-sequelize.sync({ force: false, alter: true })
+(async () => {
+  try {
+    await sequelize.sync({ force: false, alter: true });
+    console.log("Sync database berhasil !!");
+    await createReminderTrigger();
+  } catch (err) {
+    console.error("Gagal sync database atau trigger", err);
+  }
+})();
 
-app.listen(PORT, '0.0.0.0', () => {
-  logWithTimestamp('Server berjalan di PORT: 5000', true);
-});
+module.exports = app;

@@ -14,7 +14,7 @@ const ReminderEvent = sequelize.define(
       allowNull: false,
       references: {
         model: "reminders",
-        key: "id",
+        key: "reminderId",
       },
       onDelete: "CASCADE",
     },

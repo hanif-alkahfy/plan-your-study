@@ -3,7 +3,7 @@ const {sequelize} = require('../config/database');
 const User = require('./User');
 
 const Reminder = sequelize.define('Reminder', {
-    id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
+    reminderId: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     mataKuliah: { type: DataTypes.STRING, allowNull: false },
     tugas: { type: DataTypes.STRING, allowNull: false },
     deskripsi: { type: DataTypes.TEXT },

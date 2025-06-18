@@ -11,6 +11,7 @@ import EditReminderPage from "../pages/EditReminderPage";
 import JadwalList from "../components/JadwalList";
 import AddJadwalPage from "../pages/AddJadwalPage";
 import EditJadwalPage from "../pages/EditjadwalPage";
+import SetUpBot from "../pages/SetUpBot";
 
 const AppRoutes = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -64,6 +65,7 @@ const AppRoutes = () => {
           <Route path="jadwal" element={<JadwalList />} />
           <Route path="add-jadwal" element={<AddJadwalPage />} />
           <Route path="edit-jadwal/:id" element={<EditJadwalPage />} />
+          <Route path="setup-bot" element={<SetUpBot />} />
         </Route>
 
         {/* Halaman Profile */}
