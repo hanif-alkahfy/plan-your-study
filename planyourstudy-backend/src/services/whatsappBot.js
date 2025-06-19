@@ -1,159 +1,115 @@
-const schedule = require("node-schedule");
-const { Reminder } = require("../models/Reminder");
-const { JadwalKuliah } = require("../models/JadwalKuliah");
-const { logWithTimestamp } = require("../components/logWithTimestamp");
+const { Client, LocalAuth } = require("whatsapp-web.js");
+const qrcode = require("qrcode-terminal");
+const { getIO } = require("../config/socket");
 
-startServerUpTimeDisplay();
+const sessions = new Map(); // Menyimpan sesi bot per user
 
-// Inisialisasi bot WhatsApp
-const client = new Client({ authStrategy: new LocalAuth() });
+// ✅ Inisialisasi bot default saat file ini di-load
+const initDefaultBot = () => {
+  if (sessions.has("default")) return;
 
-const GROUP_ID = "120363411146663952@g.us";
-let scheduledReminders = new Map();
+  const client = new Client({
+    authStrategy: new LocalAuth({ clientId: "default" }),
+    puppeteer: { headless: true },
+  });
 
+  client.on("qr", (qr) => {
+    console.log("🔍 QR untuk bot default:");
+    qrcode.generate(qr, { small: true });
+  });
 
-client.on("qr", (qr) => {
-  logWithTimestamp("QR Code keluar!");
-  require("qrcode-terminal").generate(qr, { small: true });
+  client.on("ready", () => {
+    console.log("✅ Bot default siap");
+  });
+
+  client.initialize();
+  sessions.set("default", client);
+};
+
+// ⏫ Inisialisasi Bot per user (dipanggil dari controller)
+const initBotForUser = (userId) => {
+  if (!userId || typeof userId !== "string") throw new Error("userId invalid");
+  if (sessions.has(userId)) return; // Jangan inisialisasi dua kali
+
+  const client = new Client({
+    authStrategy: new LocalAuth({ clientId: userId }),
+    puppeteer: { headless: true },
+  });
 
   const io = getIO();
-  io.emit("qr", qr); // Kirim QR ke semua client
-});
 
-client.on("ready", async () => {
-  logWithTimestamp("WhatsApp Bot siap!");
-  checkNewReminders();
-  checkJadwalKuliah(); // Cek jadwal kuliah pertama kali saat bot siap
-  setInterval(checkNewReminders, 60000); // Cek reminder setiap 60 detik
-  setInterval(checkJadwalKuliah, 60000); // Cek jadwal kuliah setiap 60 detik
-});
+  client.on("qr", (qr) => {
+    qrcode.generate(qr, { small: true });
+    console.log(`QR code dibuat untuk user: ${userId}`);
+    io.emit(`qr-${userId}`, qr);
+  });
 
-// Fungsi untuk mengirim pesan ke grup
-const sendGroupMessage = async (message, id) => {
+  client.on("ready", () => {
+    console.log(`✅ Bot user ${userId} siap`);
+    io.emit(`ready-${userId}`);
+  });
+
+  client.on("authenticated", () => {
+    console.log(`🔐 Bot ${userId} sudah login`);
+  });
+
+  client.on("auth_failure", (msg) => {
+    console.error(`❌ Auth gagal untuk ${userId}: ${msg}`);
+  });
+
+  client.on("disconnected", (reason) => {
+    console.warn(`⚠️ Bot ${userId} disconnected: ${reason}`);
+    sessions.delete(userId);
+  });
+
+  client.initialize();
+  sessions.set(userId, client);
+};
+
+// 🔹 Fungsi test kirim pesan (untuk bot default)
+const sendTestMessage = async (number, message) => {
+  const defaultClient = sessions.get("default");
+  if (!defaultClient) throw new Error("Bot default belum siap");
+
+  const chatId = number.includes("@c.us") ? number : `${number}@c.us`;
+  await defaultClient.sendMessage(chatId, message);
+};
+
+const sendMessage = async (userId, message, reminderId = null) => {
   try {
-    await client.sendMessage(GROUP_ID, message);
-    // Update status reminder ke "sent" setelah pesan terkirim
-    await sequelize.query(
-      "UPDATE reminders SET status = 'sent', sentAt = NOW() WHERE id = ?",
-      { replacements: [id] }
-    );
-    logWithTimestamp(`Pesan berhasil dikirim`);
+    const recipient = await Recipient.findOne({ where: { userId } });
+    if (!recipient) return console.warn(`❌ User ${userId} belum mengatur nomor penerima`);
 
-    // Reset tampilan ke uptime setelah 3 detik
-    setTimeout(() => {
-      console.clear();
-      startServerUpTimeDisplay();
-    }, 3000);
+    const chatId = `${recipient.phoneNumber}@c.us`;
+    const type = recipient.type || "default";
 
-  } catch (error) {
-    console.error("Gagal mengirim pesan ke grup:", error);
+    const client = (type === "custom")
+      ? sessions.get(`user-${userId}`) // clientId harus disimpan sebagai `user-${userId}` saat inisialisasi
+      : sessions.get("default");
+
+    if (!client) {
+      return console.warn(`⚠️ Bot ${type} belum siap untuk user ${userId}`);
+    }
+
+    await client.sendMessage(chatId, message);
+
+    // Jika reminderId diberikan, tandai sebagai sent
+    if (reminderId) {
+      await sequelize.query(
+        "UPDATE reminders SET status = 'sent', sentAt = NOW() WHERE reminderId = ?",
+        { replacements: [reminderId] }
+      );
+    }
+
+    console.log(`✅ Pesan berhasil dikirim ke ${recipient.phoneNumber} dengan bot ${type}`);
+  } catch (err) {
+    console.error("❌ Gagal mengirim pesan:", err.message);
   }
 };
 
-// 🔹 Fungsi untuk mengecek jadwal kuliah dan mengirim notifikasi
-const checkJadwalKuliah = async () => {
-  //logWithTimestamp("Mengecek jadwal kuliah...");
-
-  try {
-    const now = moment().tz("Asia/Jakarta");
-    const today = now.format("dddd"); // Contoh: "Monday"
-    const upcomingTime = now.add(10, "minutes").format("HH:mm");
-
-    // Ambil jadwal kuliah untuk hari ini yang akan dimulai dalam 10 menit
-    const jadwal = await Jadwal.findAll({
-      where: {
-        hari: today,
-        jamKuliah: upcomingTime,
-      },
-    });
-
-    if (jadwal.length === 0) {
-      //logWithTimestamp("Tidak ada jadwal kuliah dalam 10 menit ke depan.");
-      return;
-    }
-
-    logWithTimestamp(`Ditemukan ${jadwal.length} jadwal kuliah yang akan dimulai.`);
-
-    // Kirim notifikasi untuk setiap jadwal yang ditemukan
-    jadwal.forEach((j) => {
-      const message = `🎓 *Jadwal Kuliah*  
-📚 : ${j.mataKuliah}  
-⏰ Jam: ${j.jamKuliah}  
-🏛 Ruang: ${j.ruang}`;
-      sendGroupMessage(message);
-    });
-  } catch (error) {
-    console.error("Gagal mengambil jadwal kuliah:", error);
-  }
+module.exports = {
+  initBotForUser,
+  sendTestMessage,
+  initDefaultBot,
+  sendMessage,
 };
-
-// 🔹 Fungsi untuk mengecek reminder baru
-const checkNewReminders = async () => {
-  logWithTimestamp("Mengecek reminder baru...", true);
-
-  try {
-    const events = await sequelize.query("SELECT reminder_id FROM reminder_events", {
-      type: sequelize.QueryTypes.SELECT,
-    });
-
-    if (events.length === 0) {
-      //logWithTimestamp("Tidak ada reminder baru.");
-      return;
-    }
-
-    logWithTimestamp(`Ditemukan ${events.length} reminder baru.`);
-
-    for (const event of events) {
-      const reminder = await sequelize.models.Reminder.findByPk(event.reminder_id);
-      if (!reminder) continue;
-
-      scheduleReminder(reminder);
-    }
-
-    // Kembalikan ke tampilan uptime setelah 5 detik
-    setTimeout(() => {
-      console.clear();
-      startServerUpTimeDisplay();
-    }, 5000);
-
-    await sequelize.query("DELETE FROM reminder_events");
-  } catch (error) {
-    console.error("Gagal mengambil reminder baru:", error);
-  }
-};
-
-// 🔹 Fungsi untuk menjadwalkan reminder tertentu
-const scheduleReminder = (reminder) => {
-  if (scheduledReminders.has(reminder.id)) return;
-
-  const reminderTime = moment(reminder.reminderTime).tz("Asia/Jakarta");
-  const now = moment().tz("Asia/Jakarta");
-  const delay = reminderTime.diff(now);
-
-  if (delay <= 0) return;
-
-  logWithTimestamp(`Reminder ID ${reminder.id} akan dikirim dalam ${Math.round(delay / 60000)} menit`);
-
-  const timeout = setTimeout(() => {
-    sendGroupMessage(formatReminderMessage(reminder), reminder.id);
-    scheduledReminders.delete(reminder.id);
-  }, delay);
-
-  scheduledReminders.set(reminder.id, timeout);
-};
-
-// 🔹 Fungsi untuk memformat pesan reminder
-const formatReminderMessage = (reminder) => {
-  const deadlineFormatted = moment(reminder.deadline).tz("Asia/Jakarta").format("ddd DD/MM/YYYY");
-
-  return `📢 *Reminder*  
-📚 : ${reminder.mataKuliah}  
-📝 : ${reminder.tugas}  
-📖 : ${reminder.deskripsi || "Tidak ada deskripsi"}  
-🔗 : ${reminder.attachmentLink || "Tidak ada link"}  
-📅 : ${deadlineFormatted}`;
-};
-
-client.initialize();
-
-module.exports = { sendGroupMessage };

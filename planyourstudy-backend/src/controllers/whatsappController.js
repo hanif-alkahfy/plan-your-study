@@ -1,53 +1,52 @@
-const { Client, LocalAuth } = require("whatsapp-web.js");
-const { getIO } = require("../config/socket");
+const {sendTestMessage,initBotForUser,initDefaultBot,sendUserMessage,} = require("../services/whatsappBot");
 
-const sessions = new Map();
+// ✅ Jalankan bot default saat controller pertama kali diload
+initDefaultBot();
 
+// 🔧 Inisialisasi bot custom untuk user
 exports.initBot = async (req, res) => {
-  const { userId } = req.body;
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ message: "userId wajib diisi" });
 
-  if (!userId) return res.status(400).json({ message: "userId wajib diisi" });
-  if (sessions.has(userId)) return res.json({ message: "Bot sudah aktif" });
+    await initBotForUser(userId);
+    res.json({ message: `Bot untuk ${userId} diinisialisasi` });
+  } catch (err) {
+    console.error("❌ Gagal inisialisasi bot:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
 
-  if (!userId || typeof userId !== "string") {
-  return res.status(400).json({ message: "userId wajib dikirim dengan benar" });
+// 🧪 Test kirim pesan pakai bot default (langsung pakai nomor WA)
+exports.testSend = async (req, res) => {
+  const { number, message } = req.body;
+
+  if (!number || !message) {
+    return res.status(400).json({ error: "Nomor dan pesan wajib diisi" });
   }
 
-  console.log("userId diterima dari frontend:", userId);
+  try {
+    await sendTestMessage(number, message);
+    res.json({ message: `✅ Pesan berhasil dikirim ke ${number}` });
+  } catch (err) {
+    console.error("Gagal kirim pesan:", err.message);
+    res.status(500).json({ error: "Gagal mengirim pesan" });
+  }
+};
 
-  const client = new Client({
-    authStrategy: new LocalAuth({ clientId: userId }),
-    puppeteer: { headless: true }
-  });
+// ✅ Kirim pesan ke user berdasarkan setting (default atau custom)
+exports.sendToUser = async (req, res) => {
+  const { userId, message } = req.body;
 
-  const io = getIO();
-  const qrcode = require("qrcode-terminal");
+  if (!userId || !message) {
+    return res.status(400).json({ error: "userId dan pesan wajib diisi" });
+  }
 
-  client.on("qr", (qr) => {
-    qrcode.generate(qr, { small: true }); // debug terminal
-    console.log("QR code dibuat!");
-    io.emit(`qr-${userId}`, qr);
-  });
-
-  client.on("ready", () => {
-    console.log(`Bot user ${userId} sudah ready`);
-    io.emit(`ready-${userId}`);
-  });
-
-  client.on("authenticated", () => {
-    console.log(`🔐 Bot user ${userId} sudah login`);
-  });
-
-  client.on("auth_failure", (msg) => {
-    console.log(`Gagal login untuk ${userId}:`, msg);
-  });
-
-  client.on("disconnected", (reason) => {
-    console.log(`Bot ${userId} disconnected:`, reason);
-  });
-
-  client.initialize();
-  sessions.set(userId, client);
-
-  res.json({ message: "Bot diinisialisasi" });
+  try {
+    await sendUserMessage(userId, message); // ← logic pilih bot berdasarkan recipient
+    res.json({ message: `✅ Pesan berhasil dikirim ke userId: ${userId}` });
+  } catch (err) {
+    console.error("❌ Gagal kirim ke user:", err.message);
+    res.status(500).json({ error: "Gagal mengirim pesan ke user" });
+  }
 };

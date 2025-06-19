@@ -20,6 +20,7 @@ exports.registerUser = async (req, res) => {
     }
 };
 
+// LOGIN USER
 exports.loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -40,7 +41,7 @@ exports.loginUser = async (req, res) => {
             message: 'Login successful',
             token,
             user: {
-                id: user.userId,
+                id: user.id,
                 username: user.username,
                 email: user.email
             }

@@ -1,34 +1,34 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; // ⬅️ tambahkan Link
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const LoginPage = ({ onLogin }) => {
+const RegisterPage = () => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
-  const API_URL = `${import.meta.env.VITE_BASE_API_URL}/auth/login`;
+  const API_URL = `${import.meta.env.VITE_BASE_API_URL}/auth/register`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     try {
-      const res = await axios.post(API_URL, { email, password });
+      const res = await axios.post(API_URL, { username, email, password });
 
-      if (res.status === 200 && res.data.token && res.data.user) {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-
-        onLogin(); // callback
-        navigate("/dashboard");
+      // ✅ Terima status 200 atau 201
+      if ((res.status === 200 || res.status === 201) && res.data.message) {
+        setSuccess("Registrasi berhasil! Silakan login.");
+        setTimeout(() => navigate("/"), 2000); // Redirect ke login
       } else {
-        setError("Login gagal: data user tidak ditemukan.");
+        setError("Registrasi gagal.");
       }
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Register error:", err);
       if (err.response?.data?.error) {
         setError(err.response.data.error);
       } else {
@@ -40,13 +40,24 @@ const LoginPage = ({ onLogin }) => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <div className="backdrop-glass p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-semibold text-blue-900 text-center mb-6">Login</h2>
+        <h2 className="text-2xl font-semibold text-blue-900 text-center mb-6">Register</h2>
 
         {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+        {success && <p className="text-green-600 text-sm mb-4 text-center">{success}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="input-glass"
+            required
+          />
+          <input
             type="email"
+            name="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -55,6 +66,7 @@ const LoginPage = ({ onLogin }) => {
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -62,20 +74,12 @@ const LoginPage = ({ onLogin }) => {
             required
           />
           <button type="submit" className="btn-primary">
-            Login
+            Register
           </button>
         </form>
-
-        {/* 🔹 Tambahkan link register */}
-        <p className="mt-4 text-center text-sm text-gray-700">
-          Belum punya akun?{" "}
-          <Link to="/register" className="text-blue-600 font-semibold hover:underline">
-            Daftar di sini
-          </Link>
-        </p>
       </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

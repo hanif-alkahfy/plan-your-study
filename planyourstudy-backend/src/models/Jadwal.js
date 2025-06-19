@@ -28,10 +28,11 @@ const Jadwal = sequelize.define('Jadwal', {
   timestamps: true
 });
 
-// Relasi ke User (1 User = 1 Jadwal)
+// Relasi 1:1 ke User
 Jadwal.belongsTo(User, {
   foreignKey: 'userId',
-  onDelete: 'CASCADE'
+  onDelete: 'CASCADE',
+  unique: true // Pastikan hanya satu jadwal per user
 });
 
 User.hasOne(Jadwal, {

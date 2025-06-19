@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import Dashboard from "../pages/Dashboard";
 import DashboardView from "../components/DashboardView";
 import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
 import ProfilePage from "../pages/ProfilePage";
 import ReminderList from "../components/ReminderList";
 import AddReminderPage from "../pages/AddReminderPage";
@@ -55,6 +56,8 @@ const AppRoutes = () => {
       <Routes>
         {/* Redirect "/" ke "/dashboard" jika sudah login */}
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage onLogin={handleLogin} />} />
+
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* Dashboard sebagai parent untuk nested routes */}
         <Route path="/dashboard/*" element={isAuthenticated ? <Dashboard onLogout={handleLogout} /> : <Navigate to="/" replace />}>

@@ -1,12 +1,22 @@
 const express = require('express');
-const { addJadwal, getAllJadwal, getJadwalById, editJadwal, deleteJadwal } = require('../controllers/jadwalController');
+const {addJadwal,getAllMyJadwal,getJadwalById,editJadwal,deleteJadwal} = require('../controllers/jadwalController');
+
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-router.post('/', addJadwal); // Menambahkan jadwal
-router.get('/', getAllJadwal); // Mengambil semua jadwal
-router.get('/:id', getJadwalById); // Mengambil jadwal berdasarkan ID
-router.put('/:id', editJadwal); // Mengedit jadwal berdasarkan ID
-router.delete('/:id', deleteJadwal); // Menghapus jadwal berdasarkan ID
+// Tambah jadwal
+router.post('/', auth, addJadwal);
+
+// Ambil semua jadwal milik user login
+router.get('/', auth, getAllMyJadwal);
+
+router.get('/:id', auth, getJadwalById);
+
+// Edit jadwal tertentu milik user (pakai jadwalId)
+router.put('/:id', auth, editJadwal);
+
+// Hapus jadwal tertentu milik user
+router.delete('/:id', auth, deleteJadwal);
 
 module.exports = router;

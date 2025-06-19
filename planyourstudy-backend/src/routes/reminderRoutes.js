@@ -1,12 +1,21 @@
 const express = require('express');
-const { addReminder, getAllReminders, getReminderById, editReminder, deleteReminder } = require('../controllers/reminderController');
+const {addReminder,getMyReminder,getReminderById,editReminder,deleteReminder} = require('../controllers/reminderController');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-router.post('/', addReminder); // Menambahkan reminder
-router.get('/', getAllReminders); // Mengambil semua reminder
-router.get('/:id', getReminderById); // mengambil reminder berdasarkan ID
-router.put('/:id', editReminder); // Mengedit reminder berdasarkan ID
-router.delete('/:id', deleteReminder); // Menghapus reminder berdasarkan ID
+// Tambah reminder untuk user login
+router.post('/', auth, addReminder);
+
+// Ambil reminder milik user login
+router.get('/', auth, getMyReminder);
+
+router.get('/:id', auth, getReminderById);
+
+// Update reminder milik user login
+router.put('/:id', auth, editReminder);
+
+// Hapus reminder milik user login
+router.delete('/:id', auth, deleteReminder);
 
 module.exports = router;

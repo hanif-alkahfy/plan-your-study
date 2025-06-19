@@ -1,22 +1,42 @@
 import { useNavigate } from "react-router-dom";
 import ReminderForm from "../components/ReminderForm";
-import { showSuccessToast, showErrorToast } from "../components/CustomToast";
 
 const AddReminderPage = () => {
   const navigate = useNavigate();
   const API_URL = `${import.meta.env.VITE_BASE_API_URL}/reminders`;
+  const token = localStorage.getItem("token");
 
   const handleAddReminder = async (newReminder) => {
-    await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newReminder),
-    });
-    //showSuccessToast("Alert berhasil ditambahkan!")
-    navigate("/dashboard/reminders");
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ auth header
+        },
+        body: JSON.stringify(newReminder),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Gagal menambahkan reminder");
+      }
+
+      // Sukses → redirect
+      navigate("/dashboard/reminders");
+
+    } catch (err) {
+      console.error("❌ Gagal tambah reminder:", err.message);
+      // TODO: Tambahkan toast / notifikasi error di UI
+    }
   };
 
-  return <ReminderForm onSubmit={handleAddReminder} onBack={() => navigate("/dashboard/reminders")} />;
+  return (
+    <ReminderForm
+      onSubmit={handleAddReminder}
+      onBack={() => navigate("/dashboard/reminders")}
+    />
+  );
 };
 
 export default AddReminderPage;
