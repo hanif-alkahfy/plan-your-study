@@ -9,6 +9,12 @@ exports.initBot = async (req, res) => {
   if (!userId) return res.status(400).json({ message: "userId wajib diisi" });
   if (sessions.has(userId)) return res.json({ message: "Bot sudah aktif" });
 
+  if (!userId || typeof userId !== "string") {
+  return res.status(400).json({ message: "userId wajib dikirim dengan benar" });
+  }
+
+  console.log("userId diterima dari frontend:", userId);
+
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: userId }),
     puppeteer: { headless: true }

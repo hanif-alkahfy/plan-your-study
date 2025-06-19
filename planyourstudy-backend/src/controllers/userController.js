@@ -40,7 +40,7 @@ exports.loginUser = async (req, res) => {
             message: 'Login successful',
             token,
             user: {
-                id: user.id,
+                id: user.userId,
                 username: user.username,
                 email: user.email
             }
@@ -53,10 +53,10 @@ exports.loginUser = async (req, res) => {
 // EDIT USER
 exports.editUser = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { userId } = req.params;
         const { username, email, password } = req.body;
 
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(userId);
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         if (username) user.username = username;
@@ -71,7 +71,7 @@ exports.editUser = async (req, res) => {
         res.json({
             message: 'User updated successfully',
             user: {
-                id: user.id,
+                id: user.userId,
                 username: user.username,
                 email: user.email
             }

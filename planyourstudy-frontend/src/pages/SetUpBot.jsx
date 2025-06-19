@@ -1,4 +1,3 @@
-// pages/SetUpBot.jsx
 import { useEffect, useState } from "react";
 import QRCode from "react-qr-code";
 import { io } from "socket.io-client";
@@ -6,7 +5,10 @@ import { io } from "socket.io-client";
 const user = JSON.parse(localStorage.getItem("user"));
 const userId = `user-${user?.id}`;
 
-const socket = io("http://192.168.0.100:5000");
+console.log("🔍 LocalStorage user:", localStorage.getItem("user"));
+console.log("🔍 Parsed userId:", userId);
+
+const socket = io("http://localhost:5000");
 
 const SetUpBot = () => {
   const [useOwnNumber, setUseOwnNumber] = useState(false);
@@ -36,8 +38,9 @@ const SetUpBot = () => {
 
   const handleStartBot = async () => {
     setBotStatus("Menunggu QR...");
+    console.log("Mengirim userId ke backend:", userId);
     // trigger backend untuk buat session WA
-    await fetch("http://192.168.0.100:5000/api/whatsapp/init", {
+    await fetch(`${import.meta.env.VITE_BASE_API_URL}/whatsapp/init`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId }),
