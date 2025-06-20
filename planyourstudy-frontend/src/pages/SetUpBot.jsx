@@ -10,15 +10,17 @@ const API_BASE = import.meta.env.VITE_BASE_API_URL;
 const socket = io("http://localhost:5000");
 
 const SetUpBot = () => {
-  const [useOwnNumber, setUseOwnNumber] = useState(false);
+  const [botType, setBotType] = useState(null); // "default" | "custom"
   const [phoneNumber, setPhoneNumber] = useState("");
   const [qrData, setQrData] = useState("");
   const [botStatus, setBotStatus] = useState("Belum Terhubung");
   const [notif, setNotif] = useState("");
+  const [isBotReady, setIsBotReady] = useState(false);
+  const [showPhoneForm, setShowPhoneForm] = useState(false);
 
   useEffect(() => {
     socket.on("connect", () => {
-      console.log("Socket terhubung:", socket.id);
+      console.log("🔌 Socket terhubung:", socket.id);
     });
 
     socket.on(`qr-user-${userId}`, (data) => {
@@ -28,27 +30,29 @@ const SetUpBot = () => {
 
     socket.on(`ready-user-${userId}`, () => {
       setBotStatus("Tersambung");
+      setIsBotReady(true);
     });
 
     return () => {
       socket.off(`qr-user-${userId}`);
       socket.off(`ready-user-${userId}`);
     };
-  }, [userId]);
+  }, []);
 
   const handleGenerateQR = async () => {
     setNotif("");
     setQrData("");
     setBotStatus("Menunggu QR...");
+    setIsBotReady(false);
 
     try {
-      await fetch(`${API_BASE}/whatsapp/init`, {
+      await fetch(`${API_BASE}/whatsapp/init-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId }), // sesuai backend
+        body: JSON.stringify({ userId }),
       });
     } catch (error) {
       setNotif("❌ Gagal generate QR");
@@ -59,17 +63,6 @@ const SetUpBot = () => {
     setNotif("");
     if (!phoneNumber) return setNotif("❌ Nomor WA tidak boleh kosong");
 
-    if (useOwnNumber && botStatus !== "Tersambung") {
-      return setNotif("❌ Bot belum terhubung. Login WA dulu");
-    }
-
-    // 🔍 Debug token & body sebelum request
-    console.log("🔐 Token dikirim:", token);
-    console.log("📦 Body dikirim:", {
-      phoneNumber,
-      type: useOwnNumber ? "custom" : "default",
-    });
-
     try {
       const res = await fetch(`${API_BASE}/recipients`, {
         method: "POST",
@@ -79,7 +72,7 @@ const SetUpBot = () => {
         },
         body: JSON.stringify({
           phoneNumber,
-          type: useOwnNumber ? "custom" : "default",
+          type: botType,
         }),
       });
 
@@ -96,66 +89,77 @@ const SetUpBot = () => {
     <div className="p-6 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Setup WhatsApp Bot</h1>
 
-      <div className="mb-4">
-        <label className="font-medium mr-3">Gunakan nomor Anda sendiri?</label>
-        <input
-          type="checkbox"
-          checked={useOwnNumber}
-          onChange={(e) => {
-            setUseOwnNumber(e.target.checked);
-            setBotStatus("Belum Terhubung");
-            setQrData("");
-            setNotif("");
-          }}
-        />
-      </div>
+      {!botType && (
+        <div className="flex flex-col gap-3 mb-6">
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            onClick={() => {
+              setBotType("default");
+              setShowPhoneForm(true);
+            }}
+          >
+            Gunakan Bot Default
+          </button>
 
-      <div className="mb-4">
-        <label className="block font-medium mb-1">Nomor WhatsApp</label>
-        <input
-          type="text"
-          className="border rounded px-3 py-2 w-full"
-          placeholder="6281234567890"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-        />
-      </div>
+          <button
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            onClick={() => {
+              setBotType("custom");
+              handleGenerateQR();
+            }}
+          >
+            Gunakan Bot Sendiri
+          </button>
+        </div>
+      )}
 
-      {useOwnNumber && (
+      {botType === "custom" && !showPhoneForm && (
         <>
-          <div className="mb-4">
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              onClick={handleGenerateQR}
-            >
-              Generate QR Code
-            </button>
-          </div>
+          <p className="text-sm mb-2 text-gray-700">Status Bot: <b>{botStatus}</b></p>
 
-          <div className="mb-4">
-            {qrData ? (
-              <>
-                <p className="mb-2 text-sm text-gray-700">Scan QR Code berikut:</p>
-                <QRCode value={qrData} size={256} />
-              </>
-            ) : (
-              <p>Menunggu QR...</p>
-            )}
-          </div>
+          {qrData ? (
+            <div className="mb-4">
+              <p className="mb-2">Scan QR Code berikut:</p>
+              <QRCode value={qrData} size={256} />
+            </div>
+          ) : (
+            <p className="mb-4">⏳ Menunggu QR...</p>
+          )}
+
+          {isBotReady && (
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-2"
+              onClick={() => setShowPhoneForm(true)}
+            >
+              Lanjutkan
+            </button>
+          )}
         </>
       )}
 
-      <button
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-4"
-        onClick={handleSave}
-        disabled={useOwnNumber && botStatus !== "Tersambung"}
-      >
-        Simpan Nomor
-      </button>
+      {showPhoneForm && (
+        <>
+          <div className="mb-4">
+            <label className="block font-medium mb-1">Nomor WhatsApp</label>
+            <input
+              type="text"
+              className="border rounded px-3 py-2 w-full"
+              placeholder="6281234567890"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+            />
+          </div>
+
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-2"
+            onClick={handleSave}
+          >
+            Simpan Nomor
+          </button>
+        </>
+      )}
 
       {notif && <p className="mt-4 text-sm">{notif}</p>}
-
-      <p className="mt-2 text-sm text-gray-600">Status bot: <b>{botStatus}</b></p>
     </div>
   );
 };

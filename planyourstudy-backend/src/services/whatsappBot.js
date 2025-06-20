@@ -1,4 +1,5 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
+const { getIO} = require("../config/socket");
 const qrcode = require("qrcode-terminal");
 const fs = require("fs");
 const path = require("path");
@@ -66,12 +67,27 @@ const initUserBot = (userId) => {
   client.on("qr", (qr) => {
     console.log(`🔐 Scan QR untuk login WhatsApp user ${userId}:`);
     qrcode.generate(qr, { small: true });
+    try {
+      const io = getIO();
+      io.emit(`qr-user-${userId}`, qr);
+    } catch (err) {
+      console.error("❌ Gagal emit QR ke frontend:", err.message);
+    }
   });
 
   client.on("ready", () => {
     console.log(`✅ WhatsApp bot user ${userId} siap digunakan!`);
+
     loggedInBots[userId] = true;
     fs.writeFileSync(loggedInPath, JSON.stringify(loggedInBots, null, 2));
+
+    // Emit status ready ke frontend
+    try {
+      const io = getIO();
+      io.emit(`ready-user-${userId}`);
+    } catch (err) {
+      console.error("❌ Gagal emit status ready ke frontend:", err.message);
+    }
   });
 
   client.on("authenticated", () => {
@@ -97,12 +113,32 @@ const initUserBot = (userId) => {
 
 // --- KIRIM PESAN ---
 const sendMessage = async (number, message, userId = null) => {
-  const targetClient = userId ? userClients[userId] : defaultClient;
-  if (!targetClient) throw new Error("Bot belum diinisialisasi");
+  let targetClient;
+
+  if (userId) {
+    if (!userClients[userId]) {
+      console.log(`ℹ️ Bot user ${userId} belum aktif, mencoba inisialisasi ulang...`);
+      initUserBot(userId);
+    }
+
+    targetClient = userClients[userId];
+
+    // Pastikan bot benar-benar sudah ready (antisipasi race condition)
+    if (!targetClient) {
+      throw new Error(`Bot user ${userId} belum tersedia di memori`);
+    }
+  } else {
+    targetClient = defaultClient;
+
+    if (!targetClient) {
+      throw new Error("Bot default belum diinisialisasi");
+    }
+  }
 
   const chatId = number.includes("@c.us") ? number : `${number}@c.us`;
   await targetClient.sendMessage(chatId, message);
 };
+
 
 module.exports = {
   initDefaultBot,
