@@ -1,24 +1,35 @@
-const {sendTestMessage,initBotForUser,initDefaultBot,sendUserMessage,} = require("../services/whatsappBot");
+const { initDefaultBot, initUserBot, sendMessage } = require("../services/whatsappBot");
 
-// ✅ Jalankan bot default saat controller pertama kali diload
-initDefaultBot();
-
-// 🔧 Inisialisasi bot custom untuk user
-exports.initBot = async (req, res) => {
+// --- INISIALISASI BOT DEFAULT ---
+exports.initDefault = (req, res) => {
   try {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ message: "userId wajib diisi" });
-
-    await initBotForUser(userId);
-    res.json({ message: `Bot untuk ${userId} diinisialisasi` });
+    initDefaultBot();
+    res.json({ message: "Inisialisasi bot default dimulai" });
   } catch (err) {
-    console.error("❌ Gagal inisialisasi bot:", err.message);
+    console.error("❌ Gagal inisialisasi bot default:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
 
-// 🧪 Test kirim pesan pakai bot default (langsung pakai nomor WA)
-exports.testSend = async (req, res) => {
+// --- INISIALISASI BOT USER (pakai JWT) ---
+exports.initUserBot = (req, res) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    return res.status(400).json({ error: "User ID tidak ditemukan di token" });
+  }
+
+  try {
+    initUserBot(userId);
+    res.json({ message: `Inisialisasi bot untuk user ${userId} dimulai` });
+  } catch (err) {
+    console.error(`❌ Gagal inisialisasi bot user ${userId}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// --- KIRIM PESAN DENGAN BOT DEFAULT ---
+exports.sendDefaultMessage = async (req, res) => {
   const { number, message } = req.body;
 
   if (!number || !message) {
@@ -26,27 +37,28 @@ exports.testSend = async (req, res) => {
   }
 
   try {
-    await sendTestMessage(number, message);
+    await sendMessage(number, message);
     res.json({ message: `✅ Pesan berhasil dikirim ke ${number}` });
   } catch (err) {
-    console.error("Gagal kirim pesan:", err.message);
-    res.status(500).json({ error: "Gagal mengirim pesan" });
+    console.error("❌ Gagal kirim pesan:", err.message);
+    res.status(500).json({ error: err.message });
   }
 };
 
-// ✅ Kirim pesan ke user berdasarkan setting (default atau custom)
-exports.sendToUser = async (req, res) => {
-  const { userId, message } = req.body;
+// --- KIRIM PESAN DENGAN BOT USER (pakai userId dari JWT juga opsional) ---
+exports.sendUserMessage = async (req, res) => {
+  const { number, message } = req.body;
+  const userId = req.user?.userId || req.body.userId; // fallback kalau belum pakai auth di route
 
-  if (!userId || !message) {
-    return res.status(400).json({ error: "userId dan pesan wajib diisi" });
+  if (!userId || !number || !message) {
+    return res.status(400).json({ error: "userId, nomor, dan pesan wajib diisi" });
   }
 
   try {
-    await sendUserMessage(userId, message); // ← logic pilih bot berdasarkan recipient
-    res.json({ message: `✅ Pesan berhasil dikirim ke userId: ${userId}` });
+    await sendMessage(number, message, userId);
+    res.json({ message: `✅ Pesan berhasil dikirim ke ${number} via user ${userId}` });
   } catch (err) {
-    console.error("❌ Gagal kirim ke user:", err.message);
-    res.status(500).json({ error: "Gagal mengirim pesan ke user" });
+    console.error(`❌ Gagal kirim pesan via user ${userId}:`, err.message);
+    res.status(500).json({ error: err.message });
   }
 };

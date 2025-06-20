@@ -48,7 +48,7 @@ const SetUpBot = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ userId: `user-${userId}` }), // sesuai backend
+        body: JSON.stringify({ userId }), // sesuai backend
       });
     } catch (error) {
       setNotif("❌ Gagal generate QR");
@@ -62,6 +62,13 @@ const SetUpBot = () => {
     if (useOwnNumber && botStatus !== "Tersambung") {
       return setNotif("❌ Bot belum terhubung. Login WA dulu");
     }
+
+    // 🔍 Debug token & body sebelum request
+    console.log("🔐 Token dikirim:", token);
+    console.log("📦 Body dikirim:", {
+      phoneNumber,
+      type: useOwnNumber ? "custom" : "default",
+    });
 
     try {
       const res = await fetch(`${API_BASE}/recipients`, {

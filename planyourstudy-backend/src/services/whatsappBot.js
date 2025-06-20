@@ -1,115 +1,111 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
-const { getIO } = require("../config/socket");
+const fs = require("fs");
+const path = require("path");
 
-const sessions = new Map(); // Menyimpan sesi bot per user
+let defaultClient;
+const userClients = {}; // Simpan instance bot per userId
 
-// ✅ Inisialisasi bot default saat file ini di-load
+const loggedInPath = path.join(__dirname, "../data/loggedInBots.json");
+let loggedInBots = fs.existsSync(loggedInPath)
+  ? JSON.parse(fs.readFileSync(loggedInPath))
+  : {};
+
+// --- BOT DEFAULT ---
 const initDefaultBot = () => {
-  if (sessions.has("default")) return;
+  if (defaultClient) return;
 
-  const client = new Client({
+  defaultClient = new Client({
     authStrategy: new LocalAuth({ clientId: "default" }),
-    puppeteer: { headless: true },
+    puppeteer: {
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
   });
 
-  client.on("qr", (qr) => {
-    console.log("🔍 QR untuk bot default:");
+  defaultClient.on("qr", (qr) => {
+    console.log("🔐 Scan QR untuk login WhatsApp (default):");
     qrcode.generate(qr, { small: true });
   });
 
-  client.on("ready", () => {
-    console.log("✅ Bot default siap");
+  defaultClient.on("ready", () => {
+    console.log("✅ WhatsApp bot default siap digunakan!");
   });
 
-  client.initialize();
-  sessions.set("default", client);
+  defaultClient.on("authenticated", () => {
+    console.log("🔓 Bot default berhasil login");
+  });
+
+  defaultClient.on("auth_failure", (msg) => {
+    console.error("❌ Bot default gagal login:", msg);
+  });
+
+  defaultClient.on("disconnected", (reason) => {
+    console.warn("⚠️ Bot default terputus:", reason);
+  });
+
+  defaultClient.initialize();
 };
 
-// ⏫ Inisialisasi Bot per user (dipanggil dari controller)
-const initBotForUser = (userId) => {
-  if (!userId || typeof userId !== "string") throw new Error("userId invalid");
-  if (sessions.has(userId)) return; // Jangan inisialisasi dua kali
+// --- BOT USER (CUSTOM) ---
+const initUserBot = (userId) => {
+  if (userClients[userId]) {
+    console.log(`♻️ Bot untuk user ${userId} sudah aktif`);
+    return userClients[userId];
+  }
 
+  const clientId = `user-${userId}`;
   const client = new Client({
-    authStrategy: new LocalAuth({ clientId: userId }),
-    puppeteer: { headless: true },
+    authStrategy: new LocalAuth({ clientId }),
+    puppeteer: {
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
   });
 
-  const io = getIO();
-
   client.on("qr", (qr) => {
+    console.log(`🔐 Scan QR untuk login WhatsApp user ${userId}:`);
     qrcode.generate(qr, { small: true });
-    console.log(`QR code dibuat untuk user: ${userId}`);
-    io.emit(`qr-${userId}`, qr);
   });
 
   client.on("ready", () => {
-    console.log(`✅ Bot user ${userId} siap`);
-    io.emit(`ready-${userId}`);
+    console.log(`✅ WhatsApp bot user ${userId} siap digunakan!`);
+    loggedInBots[userId] = true;
+    fs.writeFileSync(loggedInPath, JSON.stringify(loggedInBots, null, 2));
   });
 
   client.on("authenticated", () => {
-    console.log(`🔐 Bot ${userId} sudah login`);
+    console.log(`🔓 Bot user ${userId} berhasil login`);
   });
 
   client.on("auth_failure", (msg) => {
-    console.error(`❌ Auth gagal untuk ${userId}: ${msg}`);
+    console.error(`❌ Bot user ${userId} gagal login:`, msg);
   });
 
   client.on("disconnected", (reason) => {
-    console.warn(`⚠️ Bot ${userId} disconnected: ${reason}`);
-    sessions.delete(userId);
+    console.warn(`⚠️ Bot user ${userId} terputus:`, reason);
+    delete loggedInBots[userId];
+    delete userClients[userId];
+    fs.writeFileSync(loggedInPath, JSON.stringify(loggedInBots, null, 2));
   });
 
   client.initialize();
-  sessions.set(userId, client);
+  userClients[userId] = client;
+
+  return client;
 };
 
-// 🔹 Fungsi test kirim pesan (untuk bot default)
-const sendTestMessage = async (number, message) => {
-  const defaultClient = sessions.get("default");
-  if (!defaultClient) throw new Error("Bot default belum siap");
+// --- KIRIM PESAN ---
+const sendMessage = async (number, message, userId = null) => {
+  const targetClient = userId ? userClients[userId] : defaultClient;
+  if (!targetClient) throw new Error("Bot belum diinisialisasi");
 
   const chatId = number.includes("@c.us") ? number : `${number}@c.us`;
-  await defaultClient.sendMessage(chatId, message);
-};
-
-const sendMessage = async (userId, message, reminderId = null) => {
-  try {
-    const recipient = await Recipient.findOne({ where: { userId } });
-    if (!recipient) return console.warn(`❌ User ${userId} belum mengatur nomor penerima`);
-
-    const chatId = `${recipient.phoneNumber}@c.us`;
-    const type = recipient.type || "default";
-
-    const client = (type === "custom")
-      ? sessions.get(`user-${userId}`) // clientId harus disimpan sebagai `user-${userId}` saat inisialisasi
-      : sessions.get("default");
-
-    if (!client) {
-      return console.warn(`⚠️ Bot ${type} belum siap untuk user ${userId}`);
-    }
-
-    await client.sendMessage(chatId, message);
-
-    // Jika reminderId diberikan, tandai sebagai sent
-    if (reminderId) {
-      await sequelize.query(
-        "UPDATE reminders SET status = 'sent', sentAt = NOW() WHERE reminderId = ?",
-        { replacements: [reminderId] }
-      );
-    }
-
-    console.log(`✅ Pesan berhasil dikirim ke ${recipient.phoneNumber} dengan bot ${type}`);
-  } catch (err) {
-    console.error("❌ Gagal mengirim pesan:", err.message);
-  }
+  await targetClient.sendMessage(chatId, message);
 };
 
 module.exports = {
-  initBotForUser,
-  sendTestMessage,
   initDefaultBot,
+  initUserBot,
   sendMessage,
 };
