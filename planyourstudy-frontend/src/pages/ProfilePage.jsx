@@ -22,12 +22,7 @@ const ProfilePage = () => {
     try {
       const token = localStorage.getItem("token");
 
-      if (!user || !user.id) {
-        alert("User ID tidak ditemukan!");
-        return;
-      }
-
-      const response = await axios.put(`${API_URL}/${user.id}`, updatedData, {
+      const response = await axios.put(API_URL, updatedData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

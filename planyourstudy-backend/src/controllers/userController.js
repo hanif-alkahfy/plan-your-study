@@ -53,31 +53,32 @@ exports.loginUser = async (req, res) => {
 
 // EDIT USER
 exports.editUser = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { username, email, password } = req.body;
+  try {
+    const userId = req.user.userId; // 🔐 dari JWT, bukan dari URL
+    const { username, email, password } = req.body;
 
-        const user = await User.findByPk(userId);
-        if (!user) return res.status(404).json({ error: 'User not found' });
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-        if (username) user.username = username;
-        if (email) user.email = email;
-        if (password) {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            user.password = hashedPassword;
-        }
-
-        await user.save();
-
-        res.json({
-            message: 'User updated successfully',
-            user: {
-                id: user.userId,
-                username: user.username,
-                email: user.email
-            }
-        });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
+    if (username) user.username = username;
+    if (email) user.email = email;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      user.password = hashedPassword;
     }
+
+    await user.save();
+
+    res.json({
+      message: 'User updated successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update user', detail: error.message });
+  }
 };
+

@@ -8,9 +8,24 @@ let defaultClient;
 const userClients = {}; // Simpan instance bot per userId
 
 const loggedInPath = path.join(__dirname, "../data/loggedInBots.json");
-let loggedInBots = fs.existsSync(loggedInPath)
-  ? JSON.parse(fs.readFileSync(loggedInPath))
-  : {};
+
+let loggedInBots = {};
+try {
+  if (fs.existsSync(loggedInPath)) {
+    const raw = fs.readFileSync(loggedInPath, "utf-8");
+    const parsed = JSON.parse(raw);
+
+    // Pastikan hasil parse adalah objek dan bukan array/null
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      loggedInBots = parsed;
+    } else {
+      console.warn("⚠️ Format loggedInBots.json tidak valid. Menggunakan objek kosong.");
+    }
+  }
+} catch (err) {
+  console.error("❌ Gagal membaca loggedInBots.json:", err.message);
+}
+
 
 // --- BOT DEFAULT ---
 const initDefaultBot = () => {
@@ -50,6 +65,11 @@ const initDefaultBot = () => {
 
 // --- BOT USER (CUSTOM) ---
 const initUserBot = (userId) => {
+  if (!userId || (typeof userId !== 'string' && typeof userId !== 'number')) {
+    console.error(`❌ userId tidak valid saat inisialisasi bot:`, userId);
+    return null;
+  }
+
   if (userClients[userId]) {
     console.log(`♻️ Bot untuk user ${userId} sudah aktif`);
     return userClients[userId];
@@ -78,10 +98,19 @@ const initUserBot = (userId) => {
   client.on("ready", () => {
     console.log(`✅ WhatsApp bot user ${userId} siap digunakan!`);
 
-    loggedInBots[userId] = true;
-    fs.writeFileSync(loggedInPath, JSON.stringify(loggedInBots, null, 2));
+    // Pastikan loggedInBots bertipe object
+    if (!loggedInBots || typeof loggedInBots !== "object" || Array.isArray(loggedInBots)) {
+      loggedInBots = {};
+    }
 
-    // Emit status ready ke frontend
+    loggedInBots[userId] = true;
+
+    try {
+      fs.writeFileSync(loggedInPath, JSON.stringify(loggedInBots, null, 2));
+    } catch (err) {
+      console.error("❌ Gagal menyimpan loggedInBots:", err.message);
+    }
+
     try {
       const io = getIO();
       io.emit(`ready-user-${userId}`);
@@ -100,9 +129,15 @@ const initUserBot = (userId) => {
 
   client.on("disconnected", (reason) => {
     console.warn(`⚠️ Bot user ${userId} terputus:`, reason);
+
     delete loggedInBots[userId];
     delete userClients[userId];
-    fs.writeFileSync(loggedInPath, JSON.stringify(loggedInBots, null, 2));
+
+    try {
+      fs.writeFileSync(loggedInPath, JSON.stringify(loggedInBots, null, 2));
+    } catch (err) {
+      console.error("❌ Gagal menyimpan loggedInBots setelah disconnect:", err.message);
+    }
   });
 
   client.initialize();
@@ -111,21 +146,47 @@ const initUserBot = (userId) => {
   return client;
 };
 
+// --- RESET SESSION ---
+const resetUserSession = (userId) => {
+  try {
+    const sessionDir = path.join(__dirname, ".wwebjs_auth", `user-${userId}`);
+
+    // Hapus session folder
+    if (fs.existsSync(sessionDir)) {
+      fs.rmSync(sessionDir, { recursive: true, force: true });
+      console.log(`🧹 Session folder untuk user-${userId} dihapus`);
+    }
+
+    // Hentikan client aktif jika ada
+    if (userClients[userId]) {
+      userClients[userId].destroy();
+      delete userClients[userId];
+      console.log(`💀 Client WhatsApp user-${userId} dihentikan`);
+    }
+
+    // Hapus dari loggedInBots
+    if (loggedInBots[userId]) {
+      delete loggedInBots[userId];
+      fs.writeFileSync(loggedInPath, JSON.stringify(loggedInBots, null, 2));
+      console.log(`🗑️ loggedInBots untuk user-${userId} dihapus`);
+    }
+
+    return true;
+  } catch (err) {
+    console.error(`❌ Gagal reset session untuk user-${userId}:`, err.message);
+    return false;
+  }
+};
+
 // --- KIRIM PESAN ---
 const sendMessage = async (number, message, userId = null) => {
   let targetClient;
 
   if (userId) {
-    if (!userClients[userId]) {
-      console.log(`ℹ️ Bot user ${userId} belum aktif, mencoba inisialisasi ulang...`);
-      initUserBot(userId);
-    }
-
     targetClient = userClients[userId];
 
-    // Pastikan bot benar-benar sudah ready (antisipasi race condition)
     if (!targetClient) {
-      throw new Error(`Bot user ${userId} belum tersedia di memori`);
+      throw new Error(`Bot user ${userId} belum aktif, tidak bisa kirim pesan`);
     }
   } else {
     targetClient = defaultClient;
@@ -143,5 +204,6 @@ const sendMessage = async (number, message, userId = null) => {
 module.exports = {
   initDefaultBot,
   initUserBot,
+  resetUserSession,
   sendMessage,
 };

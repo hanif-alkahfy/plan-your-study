@@ -4,6 +4,7 @@ const {
   sendDefaultMessage,
   initUserBot,
   sendUserMessage,
+  resetUserBotSession
 } = require("../controllers/whatsappController");
 
 const auth = require("../middleware/auth");
@@ -16,6 +17,9 @@ router.post("/send-default", sendDefaultMessage);
 
 // 🔐 BOT USER (pakai JWT)
 router.post("/init-user", auth, initUserBot);
-router.post("/send-user", auth, sendUserMessage); // ← disarankan pakai auth juga
+router.post("/send-user", auth, sendUserMessage);
+
+// RESET BOT SESSION (pakai JWT)
+router.post("/reset-session", auth, resetUserBotSession);
 
 module.exports = router;

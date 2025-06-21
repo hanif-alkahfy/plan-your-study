@@ -1,5 +1,5 @@
 const express = require('express');
-const {setRecipientNumber,getRecipientNumber} = require('../controllers/recipientController');
+const { setRecipientNumber,getRecipientNumber } = require('../controllers/recipientController');
 
 const auth = require('../middleware/auth');
 
@@ -10,5 +10,7 @@ router.post('/', auth, setRecipientNumber);
 
 // Ambil nomor penerima milik user login
 router.get('/', auth, getRecipientNumber);
+
+
 
 module.exports = router;

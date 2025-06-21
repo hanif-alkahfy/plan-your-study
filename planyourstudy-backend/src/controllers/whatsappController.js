@@ -1,4 +1,4 @@
-const { initDefaultBot, initUserBot, sendMessage } = require("../services/whatsappBot");
+const { initDefaultBot, initUserBot, resetUserSession, sendMessage } = require("../services/whatsappBot");
 
 // --- INISIALISASI BOT DEFAULT ---
 exports.initDefault = (req, res) => {
@@ -24,6 +24,27 @@ exports.initUserBot = (req, res) => {
     res.json({ message: `Inisialisasi bot untuk user ${userId} dimulai` });
   } catch (err) {
     console.error(`❌ Gagal inisialisasi bot user ${userId}:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// --- RESET SESSION BOT USER ---
+exports.resetUserBotSession = (req, res) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    return res.status(400).json({ error: "User ID tidak ditemukan di token" });
+  }
+
+  try {
+    const success = resetUserSession(userId);
+    if (!success) {
+      return res.status(500).json({ error: "Gagal reset session bot user" });
+    }
+
+    res.json({ message: `✅ Session bot untuk user ${userId} berhasil direset` });
+  } catch (err) {
+    console.error(`❌ Error reset session bot user ${userId}:`, err.message);
     res.status(500).json({ error: err.message });
   }
 };
