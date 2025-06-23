@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { FaCalendarAlt, FaBell, FaChevronDown, FaHourglassHalf, FaBars, FaHome, FaList, FaPlus } from "react-icons/fa";
+import { FaCalendarAlt, FaBell, FaChevronDown, FaHourglassHalf, FaBars, FaHome, FaList, FaPlus, FaRobot } from "react-icons/fa";
 
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
@@ -91,7 +91,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </ul>
       )}
       <li className="px-6 py-3 flex items-center hover:bg-blue-200/40 rounded-lg">
-        <FaHourglassHalf className="mr-2" />
+        <FaRobot className="mr-2" />
         <Link to="/dashboard/setup-bot">Set Up Bot</Link>
       </li>
       <li className="px-6 py-3 flex items-center hover:bg-blue-200/40 rounded-lg">
