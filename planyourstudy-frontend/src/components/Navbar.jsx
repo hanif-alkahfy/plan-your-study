@@ -14,7 +14,7 @@ const Navbar = ({ isOpen, toggleSidebar, onLogout }) => {
             <FaBars size={24} />
           </button>
         ) : null}
-        <span className={`text-lg font-bold text-[#01579B] transition-all duration-300 ${isOpen ? "ml-10" : "ml-10"}`}>DoriMind</span>
+        <span className={`text-lg font-bold text-[#01579B] transition-all duration-300 ${isOpen ? "ml-10" : "ml-10"}`}>Dori Mind</span>
       </div>
 
       <div className="relative">

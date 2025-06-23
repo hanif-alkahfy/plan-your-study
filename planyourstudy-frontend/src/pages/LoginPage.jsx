@@ -8,7 +8,7 @@ const LoginPage = ({ onLogin }) => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const API_URL = `${import.meta.env.VITE_BASE_API_URL}/auth/login`;
+  const API_URL = `${import.meta.env.VITE_BASE_API_URL}/api/auth/login`;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
