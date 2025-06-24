@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom"; // ⬅️ tambahkan Link
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
 const LoginPage = ({ onLogin }) => {
   const [email, setEmail] = useState("");
@@ -18,9 +19,13 @@ const LoginPage = ({ onLogin }) => {
       const res = await axios.post(API_URL, { email, password });
 
       if (res.status === 200 && res.data.token && res.data.user) {
-        localStorage.setItem("token", res.data.token);
+        const token = res.data.token;
+        const decoded = jwtDecode(token); // dapetin exp (dalam detik)
+
+        localStorage.setItem("token", token);
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("tokenExp", decoded.exp); // ⬅️ SIMPAN di sini
 
         onLogin(); // callback
         navigate("/dashboard");
