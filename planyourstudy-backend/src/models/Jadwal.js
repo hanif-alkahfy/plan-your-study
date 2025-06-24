@@ -23,6 +23,10 @@ const Jadwal = sequelize.define('Jadwal', {
   ruang: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  isNotified: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   timestamps: true

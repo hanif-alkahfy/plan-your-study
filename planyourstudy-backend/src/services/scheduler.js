@@ -98,7 +98,10 @@ const getTodayJadwal = async () => {
   const hariIni = new Date().toLocaleDateString("id-ID", { weekday: "long" });
 
   const jadwals = await Jadwal.findAll({
-    where: { hari: hariIni },
+    where: {
+      hari: hariIni,
+      isNotified: false // hanya ambil yang belum dikirim
+    },
     include: [{ model: User, attributes: ["id"] }],
   });
 
@@ -149,6 +152,7 @@ const getJadwalRecipients = async (jadwalList) => {
       `Jangan sampai telat ya!`;
 
     result.push({
+      id: jadwal.jadwalId, // ← ini penting
       userId: jadwal.userId,
       number: recipient.phoneNumber,
       type: recipient.type,
@@ -165,7 +169,7 @@ const processJadwalQueue = async () => {
   const recipients = await getJadwalRecipients(jadwalList);
 
   for (const item of recipients) {
-    const { userId, number, message, type } = item;
+    const { id, userId, number, message, type } = item;
 
     try {
       if (type === "custom") {
@@ -174,10 +178,23 @@ const processJadwalQueue = async () => {
         await sendMessage(number, message);
       }
 
+      // 🔽 Tandai sudah dikirim
+      await Jadwal.update({ isNotified: true }, { where: { jadwalId: id } });
+
       console.log(`✅ Jadwal dikirim ke ${number}`);
     } catch (err) {
       console.error(`❌ Gagal kirim jadwal ke ${number}:`, err.message);
     }
+  }
+};
+
+// Reset status notifikasi untuk semua jadwal
+const resetIsNotified = async () => {
+  try {
+    await Jadwal.update({ isNotified: false }, { where: {} });
+    console.log("🔄 Semua jadwal berhasil di-reset (isNotified = false)");
+  } catch (err) {
+    console.error("❌ Gagal reset status notifikasi:", err.message);
   }
 };
 
@@ -188,4 +205,5 @@ module.exports = {
   getTodayJadwal,
   getJadwalRecipients,
   processJadwalQueue,
+  resetIsNotified
 };
